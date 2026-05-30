@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.tmp
+*~
+
+# Heavy / source-only asset working files (keep exported PNGs, not these)
+*.aseprite
+*.psd
+
+# Node (if any tooling lands here later)
+node_modules/
