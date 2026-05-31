@@ -9,8 +9,8 @@
   <style>
     :root{--rp:#5b3fd1;--hy:#ffd84d;--sb:#5dc7ff;--em:#14d27a;--np:#ff5cf4;--bg:#140f2b;--pn:rgba(12,8,30,0.95);--pb:rgba(255,255,255,0.12);--wh:#f6f8ff;--dn:#ff6b6b}
     *{box-sizing:border-box;image-rendering:pixelated}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0618,#140f2b,#1a0f35);color:var(--wh);font-family:"Courier New",monospace;height:100%;overflow:hidden}
-    #game-root{position:relative;width:960px;height:640px;margin:0 auto;top:50%;transform:translateY(calc(50vh - 320px));border:3px solid var(--rp);box-shadow:0 0 40px rgba(91,63,209,.5),inset 0 0 80px rgba(91,63,209,.15);background:#0a0618;overflow:hidden}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0618,#140f2b,#1a0f35);color:var(--wh);font-family:"Courier New",monospace;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    #game-root{position:relative;width:960px;height:640px;flex:none;transform-origin:center center;border:3px solid var(--rp);box-shadow:0 0 40px rgba(91,63,209,.5),inset 0 0 80px rgba(91,63,209,.15);background:#0a0618;overflow:hidden}
     #gameCanvas{display:block;width:960px;height:640px;background:transparent}
     #overlay-root{position:absolute;inset:0;pointer-events:none}
     .screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(10,6,24,.96),rgba(10,6,24,.99));pointer-events:auto;animation:fadeIn .4s ease}
@@ -56,7 +56,7 @@
     .music-ctrl button{background:rgba(12,8,30,.85);border:1px solid rgba(255,255,255,.15);color:#ccc;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-family:inherit;transition:all .15s}
     .music-ctrl button:hover{background:rgba(91,63,209,.5);color:#fff}
     .music-ctrl button.active{color:var(--hy);border-color:var(--hy)}
-    @media(max-width:980px){#game-root{width:100vw;height:100vh;transform:none;top:0;border:none}#gameCanvas{width:100vw;height:100vh}}
+    @media(max-width:980px){#game-root{border:none}}
     /* ============ v25 DREAM-ARCADE MENU SYSTEM ============ */
     .dca-fontD{font-family:'Bungee','Courier New',monospace}
     .dca-menu{position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%,#1b1147 0%,#0c0826 45%,#050310 100%)}
@@ -176,17 +176,17 @@ const SP={
   moneySprite:null,fountain:null,ladder1:null,ladder2:null,
   stones:[],benches:[],
   // Marsh night bg layers
-  marshBg1:LS(GZ+'2 Background/Night/1.png'),marshBg2:LS(GZ+'2 Background/Night/2.png'),marshBg3:LS(GZ+'2 Background/Night/3.png'),marshBg4:LS(GZ+'2 Background/Night/4.png'),marshBg5:LS(GZ+'2 Background/Night/5.png'),
+  marshBg1:LS('sprites/2 Background/Night/1.png'),marshBg2:LS('sprites/2 Background/Night/2.png'),marshBg3:LS('sprites/2 Background/Night/3.png'),marshBg4:LS('sprites/2 Background/Night/4.png'),marshBg5:LS('sprites/2 Background/Night/5.png'),
   // Shooting FX
-  fxCharged:LS(GAME+'SHOOTING_FX/charged/spritesheet.png'),
-  fxBolt:LS(GAME+'SHOOTING_FX/Bolt/spritesheet.png'),
-  fxPulse:LS(GAME+'SHOOTING_FX/Pulse/spritesheet.png'),
-  fxSpark:LS(GAME+'SHOOTING_FX/spark/spritesheet.png'),
-  fxWave:LS(GAME+'SHOOTING_FX/waveform/spritesheet.png'),
-  fxCrossed:LS(GAME+'SHOOTING_FX/crossed/spritesheet.png'),
-  hit1:LS(GAME+'SHOOTING_FX/hits/hits-1/spritesheet.png'),
-  hit2:LS(GAME+'SHOOTING_FX/hits/Hits-2/spritesheet.png'),
-  hit3:LS(GAME+'SHOOTING_FX/hits/Hits-3/spritesheet.png'),
+  fxCharged:LS('sprites/effects/SHOOTING_FX/charged/spritesheet.png'),
+  fxBolt:LS('sprites/effects/SHOOTING_FX/Bolt/spritesheet.png'),
+  fxPulse:LS('sprites/effects/SHOOTING_FX/Pulse/spritesheet.png'),
+  fxSpark:LS('sprites/effects/SHOOTING_FX/spark/spritesheet.png'),
+  fxWave:LS('sprites/effects/SHOOTING_FX/waveform/spritesheet.png'),
+  fxCrossed:LS('sprites/effects/SHOOTING_FX/crossed/spritesheet.png'),
+  hit1:LS('sprites/effects/SHOOTING_FX/hits/hits-1/spritesheet.png'),
+  hit2:LS('sprites/effects/SHOOTING_FX/hits/Hits-2/spritesheet.png'),
+  hit3:LS('sprites/effects/SHOOTING_FX/hits/Hits-3/spritesheet.png'),
   hit4:null,hit5:null,hit6:null,
   hitPurple:null,hitBlue:null,hitGreen:null,hitRed:null,hitYellow:null,
   puShieldGold:null,puBoltGold:null,puStarGold:null,puShieldSilver:null,puBoltBronze:null,
@@ -211,7 +211,7 @@ const SP={
 };
 
 // ========== MUSIC ==========
-const MUSIC={tracks:[{src:GAME+'DREAMERS GAME MUSIC.mp3',label:'Track 1'},{src:GAME+'DREAMERS GAME ALTERNATE SELECTION MUSIC.mp3',label:'Track 2'}],current:0,audio:null,playing:false,volume:.4,
+const MUSIC={tracks:[{src:'sprites/audio/DREAMERS GAME MUSIC.mp3',label:'Track 1'},{src:'sprites/audio/DREAMERS GAME ALTERNATE SELECTION MUSIC.mp3',label:'Track 2'}],current:0,audio:null,playing:false,volume:.4,
 init(){this.audio=new Audio();this.audio.loop=true;this.audio.volume=this.volume;this.loadTrack(0);this.updateUI()},
 loadTrack(i){this.current=i;this.audio.src=encodeURI(this.tracks[i].src);if(this.playing)this.audio.play().catch(()=>{});this.updateUI()},
 toggle(){if(this.playing){this.audio.pause();this.playing=false}else{this.audio.play().catch(()=>{});this.playing=true}this.updateUI()},
@@ -314,7 +314,7 @@ class MoveSys{
     if(p.floatingTimer>0){p.floatingTimer-=dt;if(p.floatingTimer<=0)p.floating=false}
     if(p.sTrans>0){p.sTrans-=dt*5;if(p.sTrans<=0){p.side=p.sTo;p.sTrans=0}return}
     this.mc-=dt;
-    const sh=SHOES[p.shoes]||SHOES.Cloud,md=(sh.s?.spd||50)>70?.07:(sh.s?.spd||50)>55?.10:.13;
+    const sh=SHOES[p.shoes]||SHOES.Cloud,md=(sh.s?.spd||50)>70?.05:(sh.s?.spd||50)>55?.07:.09;
     // v20: Normal attack (Z/G based on scheme) — quick melee, works in climbing AND boss
     if(this.consumeCtrl('attack')&&p.normalAtkCd<=0&&!w.bossActive){this.doNormalAttack()}
     // Ladder place/remove — use attack/special keys when NOT in boss mode
@@ -352,7 +352,7 @@ class MoveSys{
         if(g.ladSys.canClimb(1)){
           let step=p.ladder==='Spring'?2:1;const nf=p.floor+step;
           if(nf>=g.curMap.floors&&!w.bossActive){w.bossActive=true;p.onBossRoof=true;p.floor=g.curMap.floors;p.x=.5;p.aimAngle=-Math.PI/2}
-          else{if(nf>=w.building.floors-1){w.building.floors=nf+MVF;for(let s=0;s<4;s++){const base=w.sideData[s].windows.length;for(let f=0;f<MVF;f++)w.sideData[s].windows.push({floor:base+f,xSlot:Math.floor(rand(0,3)),open:Math.random()<.7,openTimer:rand(2,8)})}}p.floor=nf}
+          else{p.floor=nf}
           moved=true;g.strkSys.onClimb();g.addScore(10*step)}}
       if(this.isCtrl('down')||g.isPressed('ArrowDown')||g.isPressed('KeyS')){if(g.ladSys.canClimb(-1)){p.floor=Math.max(0,p.floor-1);moved=true}}
     } else {
@@ -673,7 +673,7 @@ class RadioSys{
 }
 
 // ========== CAMERA ==========
-class CamSys{constructor(g){this.g=g;this.y=0}update(dt){const p=this.g.world.player;if(this.g.world.bossActive){this.y=0}else{const targetY=-p.floor*FH;this.y=lerp(this.y,targetY,dt*3)}}}
+class CamSys{constructor(g){this.g=g;this.y=0}update(dt){const p=this.g.world.player;if(this.g.world.bossActive){this.y=0}else{const targetY=-p.floor*FH;this.y=lerp(this.y,targetY,Math.min(1,dt*6))}}}
 
 // ========== HUD (compact, not blocking floor) ==========
 function mkHUD(g){const root=document.createElement('div');root.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:5;';
@@ -694,7 +694,7 @@ class Game{
   constructor(){this.canvas=document.getElementById('gameCanvas');this.ctx=this.canvas.getContext('2d');this.width=W;this.height=H;this.keys={};this.jp={};this.state='intro';this.elapsed=0;this.runTime=0;this.profile=this.loadProf();this.world=null;this.curMap=MAPS.Pueblo;this.selMap='Pueblo';this.hud=mkHUD(this);this.settings={shake:true,particles:true};this.shake=0;this.flash=0;this.lastT=performance.now();this.paf=0;this.pat=0;this.moIdx=Math.floor(Math.random()*10);this.bindEv();this.showIntro();MUSIC.init();requestAnimationFrame(this.loop.bind(this))}
   loadProf(){const def={emeralds:0,highScore:0,character:'alex',inv:{ladders:{Basic:true},shoes:{Pueblo:true},radios:{Cloud:true},tools:{WindFan:true}},equipped:{...DEF_LOAD},achievements:[],stats:{totalClimbs:0,laddersPlaced:0,emeraldsCollected:0,bossesDefeated:0,longestStreak:0,totalTime:0},bossesKilled:{witch:false,lochness:false,hawk:false,demon:false}};const s=localStorage.getItem('dc_v15');if(s){try{const p=JSON.parse(s);return{...def,...p,inv:{...def.inv,...p.inv},equipped:{...def.equipped,...p.equipped},stats:{...def.stats,...p.stats},bossesKilled:{...def.bossesKilled,...p.bossesKilled}}}catch(e){return def}}return def}
   saveProf(){localStorage.setItem('dc_v15',JSON.stringify(this.profile))}
-  bindEv(){window.addEventListener('keydown',e=>{if(!this.keys[e.code])this.jp[e.code]=true;this.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape'){if(this.state==='playing')this.showMenu();else if(this.state==='menu'&&this.world){this.hideAll();this.hud.show();this.state='playing'}}});window.addEventListener('keyup',e=>{this.keys[e.code]=false});document.getElementById('music-toggle').onclick=()=>MUSIC.toggle();document.getElementById('music-switch').onclick=()=>MUSIC.switchTrack()}
+  bindEv(){window.addEventListener('keydown',e=>{if(!this.keys[e.code])this.jp[e.code]=true;this.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape'){if(this.state==='playing')this.showMenu();else if(this.state==='menu'&&this.world){this.hideAll();this.hud.show();this.state='playing'}}});window.addEventListener('keyup',e=>{this.keys[e.code]=false});document.getElementById('music-toggle').onclick=()=>MUSIC.toggle();document.getElementById('music-switch').onclick=()=>MUSIC.switchTrack();const fit=()=>{const r=document.getElementById('game-root');if(!r)return;const s=Math.min(window.innerWidth/W,window.innerHeight/H);r.style.transform='scale('+s+')'};window.addEventListener('resize',fit);fit();this.fit=fit}
   isPressed(c){return!!this.keys[c]}consumePress(c){const v=!!this.jp[c];this.jp[c]=false;return v}resetInput(){this.jp={}}
   hideAll(){for(const id of['intro-screen','menu-screen','map-select-screen','compete-screen','shop-screen','achievements-screen','settings-screen','game-over-screen','leaderboard-screen','vs-mode-screen'])document.getElementById(id)?.classList.add('hidden')}
 
@@ -766,8 +766,8 @@ class Game{
 
   showGO(){this.state='gameover';this.hud.hide();this.hideAll();const el=document.getElementById('game-over-screen');el.classList.remove('hidden');const p=this.world.player;this.saveProf();el.innerHTML='<div class="panel center"><h1 class="title" style="font-size:34px;color:#ff6b6b;">GAME OVER</h1><div style="font-size:16px;margin:12px 0;">Floor: <span style="color:#ffd84d">'+(p.floor+1)+'</span></div><div style="font-size:16px;">Score: <span style="color:#14d27a">'+p.score+'</span></div><div style="font-size:14px;margin:8px 0;">Emeralds: <span style="color:#ffd84d">'+p.emRun+'</span></div><div class="row" style="justify-content:center;gap:12px;margin-top:16px;"><button class="dc-btn" id="go-r">\u25b6 Retry</button><button class="dc-btn secondary" id="go-m">\u2190 Menu</button></div></div>';document.getElementById('go-r').onclick=()=>this.newRun();document.getElementById('go-m').onclick=()=>this.showMenu()}
 
-  newRun(){if(!MUSIC.playing)MUSIC.toggle();this.world={building:{name:this.curMap.name,floors:MVF},sideData:[],player:mkPlayer(this.profile),ladders:[],fallObj:[],collectibles:[],enemies:[],particles:[],effects:[],cars:[],bossDefeated:false,bossActive:false,victoryTimer:0,gameOverTimer:0,ambBirds:[]};
-    for(let s=0;s<4;s++){const wins=[];for(let f=0;f<MVF;f++)wins.push({floor:f,xSlot:Math.floor(rand(0,3)),open:Math.random()<.7,openTimer:rand(2,8)});this.world.sideData.push({windows:wins})}
+  newRun(){if(!MUSIC.playing)MUSIC.toggle();this.world={building:{name:this.curMap.name,floors:this.curMap.floors},sideData:[],player:mkPlayer(this.profile),ladders:[],fallObj:[],collectibles:[],enemies:[],particles:[],effects:[],cars:[],bossDefeated:false,bossActive:false,victoryTimer:0,gameOverTimer:0,ambBirds:[]};
+    for(let s=0;s<4;s++){const wins=[];for(let f=0;f<=this.curMap.floors;f++)wins.push({floor:f,xSlot:Math.floor(rand(0,3)),open:Math.random()<.7,openTimer:rand(2,8)});this.world.sideData.push({windows:wins})}
     if(this.curMap.name==='Marsh')for(let i=0;i<5;i++)this.world.ambBirds.push({x:rand(0,W),y:rand(20,150),vx:rand(20,60)*(Math.random()<.5?1:-1)});
     this.profile.stats.totalClimbs++;
     this.moveSys=new MoveSys(this);this.ladSys=new LadSys(this);this.fallSys=new FallSys(this);this.collSys=new CollSys(this);this.strkSys=new StrkSys(this);this.bossSys=new BossSys(this);this.enemySys=new EnemySys(this);this.carSys=new CarSys(this);this.camSys=new CamSys(this);this.radioSys=new RadioSys(this);
@@ -824,9 +824,22 @@ class Game{
     if(m.name==='Pueblo'){for(let i=0;i<6;i++){const cx=40+i*160;ctx.fillStyle='#5a8a3a';ctx.fillRect(cx,gy-20,6,22);ctx.fillRect(cx-8,gy-14,6,4);ctx.fillRect(cx+6,gy-10,6,4);ctx.fillRect(cx-8,gy-14,4,10);ctx.fillRect(cx+8,gy-10,4,8)}}}
 
   drawBuilding(ctx){const m=this.curMap,w=this.world,p=w.player;const top=Math.min(w.building.floors,p.floor+MVF),bot=Math.max(0,p.floor-6);
-    for(let f=bot;f<top;f++){const fy=this.getFloorY(f);if(fy>this.height+30||fy<-30)continue;ctx.fillStyle=f%2===0?m.bPrimary:m.bSecondary;ctx.fillRect(SL,fy,SW,FH);ctx.fillStyle=m.bAccent;ctx.fillRect(SL,fy+FH-2,SW,2);ctx.fillRect(SL,fy,4,FH);ctx.fillRect(SL+SW-4,fy,4,FH)}
-    // Tile overlay
-    for(let f=bot;f<top;f+=3){const fy=this.getFloorY(f);if(fy>this.height+30||fy<-30)continue;const t=SP.tiles[f%SP.tiles.length];if(t&&t._l&&!t._f){ctx.globalAlpha=.12;ctx.drawImage(t,SL+6,fy,SW-12,FH);ctx.globalAlpha=1}}
+    // Solid back-wall slab with left/right depth shading so the tower reads as 3D and never shows gaps
+    const topY=this.getFloorY(top-1),botY=this.getFloorY(bot)+FH;
+    const grad=ctx.createLinearGradient(SL,0,SL+SW,0);grad.addColorStop(0,m.bSecondary);grad.addColorStop(.5,m.bPrimary);grad.addColorStop(1,m.bSecondary);
+    ctx.fillStyle=grad;ctx.fillRect(SL,topY,SW,Math.max(0,botY-topY));
+    for(let f=bot;f<top;f++){const fy=this.getFloorY(f);if(fy>this.height+30||fy<-30)continue;
+      ctx.fillStyle=f%2===0?m.bPrimary:m.bSecondary;ctx.fillRect(SL,fy,SW,FH);
+      // brick seams
+      ctx.fillStyle='rgba(0,0,0,.12)';for(let bx=SL+((f%2)*16);bx<SL+SW-4;bx+=32)ctx.fillRect(bx,fy,1,FH);
+      // floor ledge: bright top highlight + accent under-lip
+      ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(SL,fy,SW,1);
+      ctx.fillStyle=m.bAccent;ctx.fillRect(SL,fy+FH-2,SW,2);
+      // 3D edge pillars
+      ctx.fillStyle=m.bAccent;ctx.fillRect(SL,fy,4,FH);ctx.fillRect(SL+SW-4,fy,4,FH);
+      ctx.fillStyle='rgba(0,0,0,.20)';ctx.fillRect(SL+SW-2,fy,2,FH);ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(SL,fy,1,FH)}
+    // Rooftop cap at the very top of the tower
+    const rfy=this.getFloorY(this.curMap.floors);if(rfy>-40&&rfy<this.height+10){ctx.fillStyle=m.bAccent;ctx.fillRect(SL-10,rfy-7,SW+20,9);ctx.fillStyle=m.bSecondary;ctx.fillRect(SL-10,rfy+2,SW+20,5);ctx.fillStyle=m.bAccent;for(let bx=SL-10;bx<SL+SW+10;bx+=22)ctx.fillRect(bx,rfy-14,8,7)}
   }
 
   drawBossArena(ctx){
@@ -912,7 +925,7 @@ const VSCHARACTERS=[
 ];
 class VSfighter{
   constructor(id,charIdx,x,facing){this.id=id;this.charIdx=charIdx;this.char=VSCHARACTERS[charIdx];this.x=x;this.y=H-80;this.vx=0;this.vy=0;this.facing=facing;this.percent=0;this.grounded=true;this.atkCooldown=0;this.specialCooldown=0;this.invuln=0;this.hitStun=0;this.dead=false;this.floatHeld=false;this.teleportCD=0;this.shadowTimer=0;this.blastCooldown=0;this.charging=false;this.chargeT=0}
-  update(dt,g,opp){
+  update(dt,g,opp,input){
     if(this.dead)return;
     if(this.hitStun>0){this.hitStun-=dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.vy+=400*dt;if(this.y>=H-80){this.y=H-80;this.vy=0;this.grounded=true;this.vx*=0.9}else this.grounded=false;this.x=Math.max(40,Math.min(W-40,this.x));return}
     if(this.invuln>0)this.invuln-=dt;
@@ -921,11 +934,7 @@ class VSfighter{
     if(this.teleportCD>0)this.teleportCD-=dt;
     if(this.blastCooldown>0)this.blastCooldown-=dt;
     if(this.shadowTimer>0){this.shadowTimer-=dt;if(this.shadowTimer<=0)this.y=H-80}
-    const left=g.isPressed('ArrowLeft')||g.isPressed('KeyA');
-    const right=g.isPressed('ArrowRight')||g.isPressed('KeyD');
-    const jump=g.isPressed('ArrowUp')||g.isPressed('KeyW');
-    const attack=g.consumePress('KeyZ');
-    const special=g.consumePress('KeyX');
+    const left=input.left,right=input.right,jump=input.jump,attack=input.attack,special=input.special;
     const spd=250*(this.char.speed||1);
     if(left){this.vx=-spd;this.facing=-1}else if(right){this.vx=spd;this.facing=1}else this.vx*=0.85;
     const jumpStr=this.char.weight==='heavy'?-260:this.char.weight==='light'?-360:-320;
@@ -972,15 +981,18 @@ Game.prototype.showVSMode=function(){this.state='vs-select';this.hideAll();const
 Game.prototype.showVSStage=function(){if(this.vsChar1===undefined)return;this.vsChar2=Math.floor(Math.random()*VSCHARACTERS.length);const el=document.getElementById('vs-mode-screen');let h='<div class="panel center" style="max-width:600px;"><h1 class="title" style="font-size:28px;">Select Stage</h1><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:450px;margin:20px auto;">';for(let i=0;i<VSSTAGES.length;i++){const s=VSSTAGES[i];h+='<div class="map-card" data-stage="'+i+'" style="border-color:'+s.color+';cursor:pointer;padding:12px;"><div style="width:100%;height:60px;background:linear-gradient(180deg,'+s.sky+','+s.ground+');border-radius:6px;margin-bottom:8px;"></div><div style="font-weight:bold;color:'+s.color+';">'+s.name+'</div></div>'}h+='</div><button class="dc-btn pink" id="vs-fight" style="font-size:18px;padding:14px 40px;margin-top:10px;">\u2694 FIGHT!</button>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{this.vsStage=parseInt(c.dataset.stage);el.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected')}});document.getElementById('vs-fight').onclick=()=>this.startVSBattle()};
 Game.prototype.startVSBattle=function(){this.state='vs-battle';this.hideAll();this.vsFighters=[new VSfighter(1,this.vsChar1,200,1),new VSfighter(2,this.vsChar2,W-200,-1)];this.vsAttacks=[];this.vsProj=[];this.vsWinner=null;this.hud.hide()};
 Game.prototype.updateVS=function(dt){if(this.state!=='vs-battle')return;
-  const cpu=this.vsFighters[1],p1=this.vsFighters[0];
-  if(cpu&&!cpu.dead&&p1&&!p1.dead){
-    const dx=p1.x-cpu.x,dy=p1.y-cpu.y,dist=Math.abs(dx);
-    if(dist>80){this.keys[dx>0?'ArrowRight':'ArrowLeft']=true;this.keys[dx<0?'ArrowRight':'ArrowLeft']=false}else{this.keys['ArrowLeft']=false;this.keys['ArrowRight']=false}
-    if(dy<-40&&cpu.grounded&&Math.random()<.1)this.jp['ArrowUp']=true;
-    if(dist<60&&Math.random()<.08)this.jp['KeyZ']=true;
-    if(dist<150&&Math.random()<.02)this.jp['KeyX']=true;
-  }
-  for(const f of this.vsFighters)f.update(dt,this,f.id===1?this.vsFighters[1]:this.vsFighters[0]);for(let i=this.vsAttacks.length-1;i>=0;i--){const a=this.vsAttacks[i];a.x+=a.facing*dt*400;for(const f of this.vsFighters){if(f.id===a.owner||f.dead||f.invuln>0||f.shadowTimer>0)continue;if(Math.abs(a.x-f.x)<30&&Math.abs(a.y-f.y)<40){f.knockback(a.x,a.y,15);this.addPart(f.x,f.y-20,'#ffd84d',.3,3,rand(-20,20),rand(-20,-5));a.hit=true;break}}if(Math.abs(a.x)<0||Math.abs(a.x)>W)a.hit=true}this.vsAttacks=this.vsAttacks.filter(a=>!a.hit);for(let i=this.vsProj.length-1;i>=0;i--){const p=this.vsProj[i];p.x+=p.vx*dt;if(p.big){p.vy=(p.vy||0)+300*dt;p.y+=p.vy*dt}p.life-=dt;for(const f of this.vsFighters){if(f.id===p.owner||f.dead)continue;if(Math.abs(p.x-f.x)<25&&Math.abs(p.y-f.y)<35){f.knockback(p.x,p.y,18);this.addPart(f.x,f.y-20,'#14d27a',.4,4,rand(-30,20),rand(-30,-10));p.life=0;break}}if(p.life<=0)this.vsProj.splice(i,1)}if(this.vsFighters.some(f=>f.dead)){this.vsWinner=this.vsFighters.find(f=>!f.dead);setTimeout(()=>this.showVSResult(),2000)}};
+  const p1=this.vsFighters[0],cpu=this.vsFighters[1];
+  // P1 = human; read live keys (held for movement/jump, consumed for attack/special)
+  const hin={left:this.isPressed('ArrowLeft')||this.isPressed('KeyA'),right:this.isPressed('ArrowRight')||this.isPressed('KeyD'),jump:this.isPressed('ArrowUp')||this.isPressed('KeyW'),attack:this.consumePress('KeyZ'),special:this.consumePress('KeyX')};
+  // P2 = CPU; fully independent AI input — NEVER touches the shared key state
+  const cin={left:false,right:false,jump:false,attack:false,special:false};
+  if(cpu&&!cpu.dead&&p1&&!p1.dead){const dx=p1.x-cpu.x,dist=Math.abs(dx),dy=p1.y-cpu.y;
+    if(dist>70){if(dx>0)cin.right=true;else cin.left=true}else if(dist<42){if(dx>0)cin.left=true;else cin.right=true}
+    if(dy<-50&&cpu.grounded&&Math.random()<.06)cin.jump=true;
+    if(cpu.grounded&&Math.random()<.012)cin.jump=true;
+    if(dist<70&&cpu.atkCooldown<=0&&Math.random()<.55)cin.attack=true;
+    if(dist<175&&cpu.specialCooldown<=0&&cpu.teleportCD<=0&&cpu.blastCooldown<=0&&Math.random()<.25)cin.special=true;}
+  if(p1)p1.update(dt,this,cpu,hin);if(cpu)cpu.update(dt,this,p1,cin);for(let i=this.vsAttacks.length-1;i>=0;i--){const a=this.vsAttacks[i];a.x+=a.facing*dt*400;for(const f of this.vsFighters){if(f.id===a.owner||f.dead||f.invuln>0||f.shadowTimer>0)continue;if(Math.abs(a.x-f.x)<30&&Math.abs(a.y-f.y)<40){f.knockback(a.x,a.y,15);this.addPart(f.x,f.y-20,'#ffd84d',.3,3,rand(-20,20),rand(-20,-5));a.hit=true;break}}if(Math.abs(a.x)<0||Math.abs(a.x)>W)a.hit=true}this.vsAttacks=this.vsAttacks.filter(a=>!a.hit);for(let i=this.vsProj.length-1;i>=0;i--){const p=this.vsProj[i];p.x+=p.vx*dt;if(p.big){p.vy=(p.vy||0)+300*dt;p.y+=p.vy*dt}p.life-=dt;for(const f of this.vsFighters){if(f.id===p.owner||f.dead)continue;if(Math.abs(p.x-f.x)<25&&Math.abs(p.y-f.y)<35){f.knockback(p.x,p.y,18);this.addPart(f.x,f.y-20,'#14d27a',.4,4,rand(-30,20),rand(-30,-10));p.life=0;break}}if(p.life<=0)this.vsProj.splice(i,1)}if(this.vsFighters.some(f=>f.dead)){this.vsWinner=this.vsFighters.find(f=>!f.dead);setTimeout(()=>this.showVSResult(),2000)}};
 Game.prototype.renderVS=function(ctx){if(this.state!=='vs-battle')return;const s=VSSTAGES[this.vsStage];
   const bgSpr=s.bgSprite?SP[s.bgSprite]:null;
   if(bgSpr&&bgSpr._l&&!bgSpr._f){ctx.drawImage(bgSpr,0,0,W,H)}
