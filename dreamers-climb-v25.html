@@ -97,6 +97,22 @@
     .dca-chip .k{font-size:8px;letter-spacing:2px;color:#8a7acc}
     .dca-chip .v{font-family:'Bungee','Courier New',monospace;font-size:16px;margin-top:2px}
     .dca-load{font-size:9px;color:#6a5fa0;letter-spacing:1px;margin-top:11px}
+    /* ===== 80s/90s SYNTHWAVE ARCADE INTRO ===== */
+    .syn{position:absolute;inset:0;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,#160827 0%,#3a0d52 36%,#7d1a6e 58%,#160827 58%,#0a0618 100%)}
+    .syn-sun{position:absolute;left:50%;top:16%;transform:translateX(-50%);width:230px;height:230px;border-radius:50%;background:linear-gradient(180deg,#ffe24d,#ff7ad4 65%,#a3239a);box-shadow:0 0 70px rgba(255,140,200,.6);overflow:hidden;animation:synSun 4s ease-in-out infinite;z-index:1}
+    .syn-sun::after{content:"";position:absolute;left:0;right:0;bottom:0;height:52%;background:repeating-linear-gradient(180deg,transparent 0 5px,#160827 5px 11px)}
+    @keyframes synSun{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+    .syn-mtn{position:absolute;left:0;right:0;bottom:42%;height:2px;background:#ff5cf4;box-shadow:0 0 14px #ff5cf4;z-index:2}
+    .syn-grid{position:absolute;left:-60%;right:-60%;bottom:0;height:44%;z-index:2;background-image:linear-gradient(90deg,rgba(93,199,255,.55) 1px,transparent 1px),linear-gradient(0deg,rgba(93,199,255,.55) 2px,transparent 2px);background-size:46px 46px;transform:perspective(300px) rotateX(72deg);transform-origin:bottom;animation:synGrid 1.3s linear infinite}
+    @keyframes synGrid{from{background-position-y:0}to{background-position-y:46px}}
+    .syn-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:4}
+    .syn-logo{width:150px;height:150px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(93,199,255,.7)) drop-shadow(0 0 36px rgba(255,92,244,.4));animation:heroFloat 4s ease-in-out infinite}
+    .syn-title{font-family:'Bungee','Courier New',monospace;font-size:60px;line-height:.88;letter-spacing:3px;background:linear-gradient(180deg,#fff,#9fe3ff 46%,#5dc7ff 56%,#2b7fd1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(3px 3px 0 #a3239a) drop-shadow(0 0 16px rgba(93,199,255,.5))}
+    .syn-title2{font-size:46px;background:linear-gradient(180deg,#fff4c2,#ffd84d 50%,#ff9d3d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(3px 3px 0 #b8631f) drop-shadow(0 0 14px rgba(255,184,69,.5))}
+    .syn-press{margin-top:20px;font-family:'Bungee','Courier New',monospace;font-size:15px;color:#ffd84d;letter-spacing:2px;text-shadow:0 0 10px rgba(255,216,77,.8);animation:synBlink 1s steps(1) infinite}
+    .syn-cred{margin-top:9px;font-size:10px;letter-spacing:3px;color:#7fd8ff}
+    @keyframes synBlink{50%{opacity:0}}
+    .syn-scan{position:absolute;inset:0;z-index:6;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px)}
   </style>
 </head>
 <body>
@@ -320,7 +336,7 @@ class MoveSys{
     if(p.floatingTimer>0){p.floatingTimer-=dt;if(p.floatingTimer<=0)p.floating=false}
     if(p.sTrans>0){p.sTrans-=dt*5;if(p.sTrans<=0){p.side=p.sTo;p.sTrans=0}return}
     this.mc-=dt;
-    const sh=SHOES[p.shoes]||SHOES.Cloud,md=(sh.s?.spd||50)>70?.05:(sh.s?.spd||50)>55?.07:.09;
+    if(p.speedBoost>0)p.speedBoost-=dt;const sh=SHOES[p.shoes]||SHOES.Cloud;let md=(sh.s?.spd||50)>70?.05:(sh.s?.spd||50)>55?.07:.09;if(p.speedBoost>0)md*=.5;
     // v20: Normal attack (Z/G based on scheme) — quick melee, works in climbing AND boss
     if(this.consumeCtrl('attack')&&p.normalAtkCd<=0&&!w.bossActive){this.doNormalAttack()}
     // Ladder place/remove — use attack/special keys when NOT in boss mode
@@ -636,8 +652,13 @@ class BossSys{
 class StrkSys{constructor(g){this.g=g;this.lt=0;this.slow=0;this.sh30=false}update(dt){const p=this.g.world.player;this.lt+=dt;if(this.lt>5){if(p.streak>0)p.streak=Math.max(0,p.streak-dt*2)}if(this.slow>0)this.slow-=dt}onClimb(){const g=this.g,p=g.world.player;this.lt=0;p.streak+=1;if(p.streak>g.profile.stats.longestStreak)g.profile.stats.longestStreak=Math.floor(p.streak);if(p.streak>=10&&p.streak<11){const w=g.world.sideData[p.side].windows.filter(w=>w.floor===p.floor&&!w.open);if(w.length>0){w[0].open=true;g.addScore(25)}}if(p.streak>=20&&p.streak<21)this.slow=6;if(p.streak>=30&&!this.sh30){p.shield+=1;this.sh30=true}}hasSlow(){return this.slow>0}reset(){this.g.world.player.streak=0;this.lt=0;this.sh30=false}}
 
 // ========== COLLECTIBLES ==========
-class CollSys{constructor(g){this.g=g}update(dt){const g=this.g,w=g.world;if(!w||w.bossActive)return;if(Math.random()<.02){const side=Math.floor(Math.random()*4),x=.15+Math.random()*.7;const r=Math.random();let type='coin';if(r>.65)type='gem';if(r>.9)type='star';if(g.curMap.name==='City'&&type==='coin')type='silver';w.collectibles.push({side,x,y:80+Math.random()*400,type,bob:Math.random()*Math.PI*2})}
-  for(let i=w.collectibles.length-1;i>=0;i--){const c=w.collectibles[i];c.bob+=dt*4;c.y+=Math.sin(c.bob)*.8;if(c.y>H+40){w.collectibles.splice(i,1);continue}if(c.side===w.player.side){const px=g.getPX(),py=g.getPY(),cx=AL+c.x*AW;if(Math.abs(cx-px)<20&&Math.abs(c.y-py)<26){const vals={coin:[25,1,'#ffd84d',7],silver:[30,2,'#c0c8d8',8],gem:[50,2,'#5b3fd1',9],star:[100,3,'#ffd84d',12]};const[sc,em,col,pc]=vals[c.type]||vals.coin;g.addScore(sc);g.addEm(em);for(let j=0;j<pc;j++)g.addPart(cx,c.y,col,.55,3.5,rand(-55,55),rand(-45,-15));w.collectibles.splice(i,1)}}}}}
+class CollSys{constructor(g){this.g=g}update(dt){const g=this.g,w=g.world,p=w.player;if(!w||w.bossActive)return;
+  // Spawn floor-anchored pickups a few floors ABOVE the player so they climb into them
+  if(Math.random()<.05&&w.collectibles.length<16){const side=Math.floor(Math.random()*4),x=.12+Math.random()*.76,floor=p.floor+3+Math.floor(Math.random()*11);const r=Math.random();let type='coin';if(r>.5)type='gem';if(r>.74)type='bolt';if(r>.9)type='star';if(g.curMap.name==='City'&&type==='coin')type='silver';w.collectibles.push({side,x,floor,type,bob:Math.random()*6.28})}
+  for(let i=w.collectibles.length-1;i>=0;i--){const c=w.collectibles[i];c.bob+=dt*4;if(c.floor<p.floor-5){w.collectibles.splice(i,1);continue}
+    if(c.side===p.side&&c.floor===p.floor&&Math.abs(c.x-p.x)<.14){
+      if(c.type==='bolt')p.speedBoost=6; else if(c.type==='star')p.shield=Math.min(3,(p.shield||0)+1);
+      const vals={coin:[25,1,'#ffd84d',7],silver:[30,2,'#c0c8d8',8],gem:[50,2,'#b14cff',9],star:[80,0,'#ffd84d',12],bolt:[20,1,'#5dc7ff',10]};const[sc,em,col,pc]=vals[c.type]||vals.coin;const cy=g.getFloorY(c.floor)+11;g.addScore(sc);if(em)g.addEm(em);for(let j=0;j<pc;j++)g.addPart(g.getPX(),cy,col,.55,3.5,rand(-55,55),rand(-45,-15));w.collectibles.splice(i,1)}}}}
 
 // ========== CARS ==========
 class CarSys{constructor(g){this.g=g;this.st=1.5}update(dt){const g=this.g,w=g.world,p=w.player;if(!g.curMap.hasCars||w.bossActive)return;
@@ -705,7 +726,13 @@ class Game{
   isPressed(c){return!!this.keys[c]}consumePress(c){const v=!!this.jp[c];this.jp[c]=false;return v}resetInput(){this.jp={}}
   hideAll(){for(const id of['intro-screen','menu-screen','map-select-screen','compete-screen','shop-screen','achievements-screen','settings-screen','game-over-screen','leaderboard-screen','vs-mode-screen'])document.getElementById(id)?.classList.add('hidden')}
 
-  showIntro(){this.hideAll();const el=document.getElementById('intro-screen');el.classList.remove('hidden');el.innerHTML='<div class="dca-menu"><div class="dca-aurora"></div><div class="dca-grain"></div><div class="dca-vig"></div><div class="dca-stack" style="justify-content:center;padding-top:0;"><img class="dca-hero" style="width:300px;height:300px;" src="'+encodeURI(DS+'DREAMERS INTO IMAGE REVISED.png')+'" onerror="this.style.display=\'none\'"><div class="dca-title" style="font-size:62px;">DREAMERS</div><div class="dca-title" style="font-size:46px;background:linear-gradient(180deg,#d7f1ff,#5dc7ff 50%,#2b7fd1);-webkit-background-clip:text;background-clip:text;">CLIMB</div><div class="dca-sub">v25 · DREAM-ARCADE</div></div></div>';setTimeout(()=>{el.classList.add('hidden');this.showMenu()},3200)}
+  showIntro(){this.hideAll();const el=document.getElementById('intro-screen');el.classList.remove('hidden');
+    el.innerHTML='<div class="syn"><div class="syn-sun"></div><div class="syn-mtn"></div><div class="syn-grid"></div><div class="syn-scan"></div>'
+      +'<div class="syn-stage"><img class="syn-logo" src="'+encodeURI(DS+'DREAMERS INTO IMAGE REVISED.png')+'" onerror="this.style.display=\'none\'">'
+      +'<div class="syn-title">DREAMERS</div><div class="syn-title syn-title2">CLIMB</div>'
+      +'<div class="syn-press">&#9656; PRESS START &#9666;</div><div class="syn-cred">&copy; 198X DREAMERS ARCADE</div></div></div>';
+    let done=false;const go=()=>{if(done)return;done=true;clearTimeout(this._introTO);window.removeEventListener('keydown',go);el.classList.add('hidden');this.showMenu()};
+    this._introTO=setTimeout(go,5600);window.addEventListener('keydown',go);el.onclick=go}
 
   showMenu(){this.state='menu';this.hideAll();this.hud.hide();if(this.radioSys)this.radioSys.hide();const el=document.getElementById('menu-screen');el.classList.remove('hidden');const p=this.profile,s=p.stats;
     el.innerHTML='<div class="dca-menu"><canvas id="menu-bg" style="position:absolute;inset:0;width:100%;height:100%;"></canvas><div class="dca-aurora"></div><div class="dca-grain"></div><div class="dca-vig"></div>'
@@ -885,9 +912,9 @@ class Game{
     if(!l.destroyed&&l.hp<l.maxHp){ctx.fillStyle='#ff6b6b';ctx.fillRect(lx-5,ly1-4,10*(l.hp/l.maxHp),2)}ctx.globalAlpha=1}}
 
   drawEnemies(ctx){const w=this.world,p=w.player;const wf6=Math.floor(this.elapsed/0.1)%6;for(const e of w.enemies){if(e.side!==p.side)continue;const ex=AL+e.x*AW,ey=this.getFloorY(e.floor)-4;if(ey>this.height+20||ey<-20)continue;
-    if(e.et==='cowboy'){if(!DSFRAME(ctx,SP.cowboyWalk,wf6,48,48,ex-15,ey-34,30,36,e.dir<0)){ctx.fillStyle='#8b6914';ctx.fillRect(ex-6,ey-16,12,16);ctx.fillStyle='#c4a574';ctx.fillRect(ex-8,ey-22,16,8);ctx.fillStyle='#F4F8FF';ctx.fillRect(ex-4,ey-14,8,4)}}
-    else if(e.et==='monkey'){if(!DSFRAME(ctx,SP.monkeyWalk,wf6,48,48,ex-15,ey-28,30,30,e.dir<0)){ctx.fillStyle='#6a8a3a';ctx.fillRect(ex-6,ey-14,12,12);ctx.fillStyle='#8aaa4a';ctx.fillRect(ex-4,ey-10,8,6);ctx.fillStyle='#FFD84D';ctx.fillRect(ex-3,ey-12,2,2);ctx.fillRect(ex+1,ey-12,2,2)}}
-    else if(e.et==='drone'){if(!DSFRAME(ctx,SP.droneWalk,this.paf%4,48,48,ex-16,ey-26,32,26,false)){ctx.fillStyle='#5a5a8a';ctx.fillRect(ex-12,ey-8,24,10);ctx.fillStyle='#ff4a4a';ctx.fillRect(ex-2,ey-12,4,4);const pw=8+Math.sin(this.elapsed*20)*4;ctx.fillStyle='#8a8aaa';ctx.fillRect(ex-pw,ey-10,pw*2,2)}}}}
+    if(e.et==='cowboy'){if(!DSFRAME(ctx,SP.cowboyWalk,wf6,48,48,ex-13,ey-28,26,30,e.dir<0)){ctx.fillStyle='#8b6914';ctx.fillRect(ex-6,ey-16,12,16);ctx.fillStyle='#c4a574';ctx.fillRect(ex-8,ey-22,16,8);ctx.fillStyle='#F4F8FF';ctx.fillRect(ex-4,ey-14,8,4)}}
+    else if(e.et==='monkey'){if(!DSFRAME(ctx,SP.monkeyWalk,wf6,48,48,ex-12,ey-22,24,24,e.dir<0)){ctx.fillStyle='#6a8a3a';ctx.fillRect(ex-6,ey-14,12,12);ctx.fillStyle='#8aaa4a';ctx.fillRect(ex-4,ey-10,8,6);ctx.fillStyle='#FFD84D';ctx.fillRect(ex-3,ey-12,2,2);ctx.fillRect(ex+1,ey-12,2,2)}}
+    else if(e.et==='drone'){if(!DSFRAME(ctx,SP.droneWalk,this.paf%4,48,48,ex-13,ey-22,26,22,false)){ctx.fillStyle='#5a5a8a';ctx.fillRect(ex-12,ey-8,24,10);ctx.fillStyle='#ff4a4a';ctx.fillRect(ex-2,ey-12,4,4);const pw=8+Math.sin(this.elapsed*20)*4;ctx.fillStyle='#8a8aaa';ctx.fillRect(ex-pw,ey-10,pw*2,2)}}}}
 
   drawFallObj(ctx){const w=this.world,p=w.player;for(const o of w.fallObj){if(o.side!==p.side)continue;
     const ox=o.x-o.w/2,oy=o.y-o.h/2;
@@ -900,18 +927,19 @@ class Game{
     else if(o.kind==='tv'){DSF(ctx,SP.cityHazard,ox,oy,o.w,o.h,'#3a3a4a')}
     else{ctx.fillStyle='#888';ctx.fillRect(ox,oy,o.w,o.h)}}}
 
-  drawColl(ctx){const w=this.world,p=w.player;for(const c of w.collectibles){if(c.side!==p.side)continue;const cx=AL+c.x*AW,cy=c.y+Math.sin(c.bob)*3;
-    if(c.type==='silver'){DSF(ctx,SP.citySilver,cx-10,cy-10,20,20,'#c0c8d8')}
-    else if(c.type==='coin'){DSF(ctx,SP.moneySprite,cx-8,cy-8,16,16,'#ffd84d')}
-    else if(c.type==='gem'){ctx.fillStyle='#5b3fd1';ctx.beginPath();ctx.moveTo(cx,cy-8);ctx.lineTo(cx+6,cy);ctx.lineTo(cx,cy+8);ctx.lineTo(cx-6,cy);ctx.closePath();ctx.fill();ctx.fillStyle='#8a7acc';ctx.beginPath();ctx.arc(cx-1,cy-2,2,0,Math.PI*2);ctx.fill()}
-    else if(c.type==='star'){DSF(ctx,SP.puStarGold,cx-8,cy-8,16,16,'#ffd84d')}}}
+  drawColl(ctx){const w=this.world,p=w.player;for(const c of w.collectibles){if(c.side!==p.side)continue;const cx=AL+c.x*AW,cy=this.getFloorY(c.floor)+11+Math.sin(c.bob)*3;if(cy<-20||cy>this.height+20)continue;
+    if(c.type==='silver'){DSF(ctx,SP.citySilver,cx-9,cy-9,18,18,'#c0c8d8')}
+    else if(c.type==='coin'){ctx.fillStyle='#b8860b';ctx.beginPath();ctx.arc(cx,cy,8,0,6.29);ctx.fill();ctx.fillStyle='#ffd84d';ctx.beginPath();ctx.arc(cx,cy,6.4,0,6.29);ctx.fill();ctx.fillStyle='#fff6c0';ctx.fillRect(cx-2,cy-4,2,8)}
+    else if(c.type==='gem'){ctx.fillStyle='#b14cff';ctx.beginPath();ctx.moveTo(cx,cy-8);ctx.lineTo(cx+6,cy);ctx.lineTo(cx,cy+8);ctx.lineTo(cx-6,cy);ctx.closePath();ctx.fill();ctx.fillStyle='#e3b8ff';ctx.beginPath();ctx.arc(cx-1,cy-2,2,0,6.29);ctx.fill()}
+    else if(c.type==='bolt'){ctx.fillStyle='rgba(93,199,255,.3)';ctx.beginPath();ctx.arc(cx,cy,10,0,6.29);ctx.fill();ctx.fillStyle='#5dc7ff';ctx.beginPath();ctx.moveTo(cx-3,cy-8);ctx.lineTo(cx+4,cy-1);ctx.lineTo(cx,cy-1);ctx.lineTo(cx+3,cy+8);ctx.lineTo(cx-4,cy+1);ctx.lineTo(cx,cy+1);ctx.closePath();ctx.fill()}
+    else if(c.type==='star'){ctx.fillStyle='#ffd84d';const s=8;ctx.beginPath();for(let k=0;k<5;k++){const a=-Math.PI/2+k*2*Math.PI/5;ctx.lineTo(cx+Math.cos(a)*s,cy+Math.sin(a)*s);const a2=a+Math.PI/5;ctx.lineTo(cx+Math.cos(a2)*s*.45,cy+Math.sin(a2)*s*.45)}ctx.closePath();ctx.fill()}}}
 
   drawCars(ctx){const w=this.world;for(const car of w.cars){if(!car.active)continue;if(car.sprite&&car.sprite._l&&!car.sprite._f){ctx.save();if(car.dir<0){ctx.translate(car.x+25,car.y-14);ctx.scale(-1,1);ctx.drawImage(car.sprite,0,0,50,28)}else ctx.drawImage(car.sprite,car.x-25,car.y-14,50,28);ctx.restore()}else{ctx.fillStyle='#4a4a6a';ctx.fillRect(car.x-25,car.y-8,50,16);ctx.fillStyle='#87ceeb';ctx.fillRect(car.x-15,car.y-14,30,8);ctx.fillStyle='#333';ctx.beginPath();ctx.arc(car.x-15,car.y+8,5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(car.x+15,car.y+8,5,0,Math.PI*2);ctx.fill()}if(car.speed>180){ctx.fillStyle='rgba(255,216,77,.3)';ctx.fillRect(car.dir>0?car.x+25:car.x-35,car.y-4,10,8)}}}
 
   drawPlayer(ctx){const p=this.world.player,px=this.getPX(),py=this.getPY();if(py>this.height+30||py<-30)return;if(p.invuln>0&&Math.floor(p.invuln*10)%2===0)return;
     const cs={alex:SP.alex,kai:SP.kai,maya:SP.maya,zezu:SP.zezu},cs2=cs[p.char];
     if(cs2&&cs2._l&&!cs2._f){ctx.save();if(p.facing<0){ctx.translate(px+14,py-22);ctx.scale(-1,1);ctx.drawImage(cs2,0,0,28,38)}else ctx.drawImage(cs2,px-14,py-22,28,38);ctx.restore()}
-    else{ctx.save();if(p.facing<0){ctx.translate(px,py);ctx.scale(-1,1);ctx.translate(-px,-py)}
+    else{ctx.save();ctx.translate(px,py+9);ctx.scale(.74,.74);ctx.translate(-px,-(py+9));if(p.facing<0){ctx.translate(px,py);ctx.scale(-1,1);ctx.translate(-px,-py)}
       ctx.fillStyle='#ff7a2e';ctx.fillRect(px-7,py-18,14,14);ctx.fillStyle='#48C6FF';ctx.fillRect(px-4,py-14,8,6);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(px-3,py-13,3,3);ctx.fillStyle='#ff7a2e';ctx.fillRect(px-6,py-4,12,12);ctx.fillStyle='#333';ctx.fillRect(px-6,py+2,12,2);ctx.fillStyle='#ff7a2e';ctx.fillRect(px-9,py-3,3,8);ctx.fillRect(px+6,py-3,3,8);ctx.fillStyle='#fff';ctx.fillRect(px-9,py+3,3,3);ctx.fillRect(px+6,py+3,3,3);ctx.fillStyle='#ff7a2e';ctx.fillRect(px-5,py+8,4,8);ctx.fillRect(px+1,py+8,4,8);ctx.fillStyle='#fff';ctx.fillRect(px-6,py+14,5,4);ctx.fillRect(px+1,py+14,5,4);
       if(this.isPressed('ArrowUp')||this.isPressed('KeyW')){ctx.fillStyle='#ffd84d';ctx.fillRect(px-4,py+18,3,4+Math.sin(this.elapsed*20)*3);ctx.fillRect(px+1,py+18,3,4+Math.sin(this.elapsed*20+1)*3);ctx.fillStyle='#ff5cf4';ctx.fillRect(px-3,py+22,2,2+Math.sin(this.elapsed*25)*2);ctx.fillRect(px+2,py+22,2,2+Math.sin(this.elapsed*25+1)*2)}
       ctx.restore()}
