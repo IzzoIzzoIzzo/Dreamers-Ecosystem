@@ -161,6 +161,7 @@ const SP={
   // Health/Gold
   goldBar:LS(SB+'GOLD BAR PUEBLO.png'),healthHeart:LS(SB+'HEALTH HEART SPRITES.png'),
   marshHealth:LS(SB+'MARSH HEALTH RESTORE SPRITE PICKUP.png'),foodHealth:LS(SB+'FOOD HEALTH PUEBLO.png'),
+  windowFrog:LS(SB+'MARSH FROG POISONOUS WINDOW HOP OUT.png'),emeraldPickup:LS(SB+'EMERALD MARSH PICKUP SPRITE.png'),
   // Charged attacks
   charged1:LS(SB+'charged1.png'),charged2:LS(SB+'charged2.png'),charged3:LS(SB+'charged3.png'),
   charged4:LS(SB+'charged4.png'),charged5:LS(SB+'charged5.png'),charged6:LS(SB+'charged6.png'),
@@ -416,8 +417,8 @@ class LadSys{
   removeNear(){const w=this.g.world,p=w.player;let best=null,bd=Infinity;for(const l of w.ladders){if(l.side!==p.side||l.destroyed)continue;const d=Math.abs(l.floor-p.floor)+Math.abs(l.x-p.x);if(d<bd){bd=d;best=l}}if(best&&bd<.25)best.destroyed=true}
   canClimb(dir){const w=this.g.world,p=w.player;if(p.floor+dir<0)return false;
     // Only block if directly at a closed window - check x position
-    // v25: OPEN windows block climbing (something's in the way); closed windows are climbable
-    if(dir>0){const sd=w.sideData[p.side],win=sd.windows.find(wi=>wi.floor===p.floor&&wi.open);if(win){const wx=SL+24+win.xSlot*(SW/4)+10,px=this.g.getPX();if(Math.abs(wx-px)<18)return false}}
+    // v25: OPEN windows block climbing in their column. If it holds a powerup, climbing into it GRABS it and clears the way.
+    if(dir>0){const sd=w.sideData[p.side],win=sd.windows.find(wi=>wi.floor===p.floor&&wi.open);if(win){const cx=SL+22+win.xSlot*(SW/4)+11,px=this.g.getPX();if(Math.abs(cx-px)<SW/7){if(win.pu){win.pu=false;win.open=false;win.openTimer=rand(3,6);const g=this.g;g.addEm(3);g.addScore(15);for(let i=0;i<12;i++)g.addPart(cx,g.getFloorY(p.floor),'#14d27a',.5,3,rand(-35,35),rand(-45,-5))}else return false}}}
     const paints=w.effects.filter(e=>e.type==='paint'&&e.side===p.side&&e.floor===p.floor);const lad=w.ladders.find(l=>l.side===p.side&&l.floor===p.floor&&!l.destroyed&&Math.abs(l.x-p.x)<(paints.length>0?.14:.1));if(lad)return true;const grp=(SHOES[p.shoes]?.s?.grp||40);if((grp>60||grp>40&&Math.random()<.18)&&dir>0)return true;return false}
   dmgAt(side,floor,x){const w=this.g.world;const l=w.ladders.find(l=>l.side===side&&l.floor===floor&&!l.destroyed&&Math.abs(l.x-x)<.08);if(!l)return;if(w.player.radio==='Zen'&&Math.random()<.3)return;l.hp--;if(l.hp<=0)l.destroyed=true}
 }
@@ -768,7 +769,7 @@ class Game{
   showGO(){this.state='gameover';this.hud.hide();this.hideAll();const el=document.getElementById('game-over-screen');el.classList.remove('hidden');const p=this.world.player;this.saveProf();el.innerHTML='<div class="panel center"><h1 class="title" style="font-size:34px;color:#ff6b6b;">GAME OVER</h1><div style="font-size:16px;margin:12px 0;">Floor: <span style="color:#ffd84d">'+(p.floor+1)+'</span></div><div style="font-size:16px;">Score: <span style="color:#14d27a">'+p.score+'</span></div><div style="font-size:14px;margin:8px 0;">Emeralds: <span style="color:#ffd84d">'+p.emRun+'</span></div><div class="row" style="justify-content:center;gap:12px;margin-top:16px;"><button class="dc-btn" id="go-r">\u25b6 Retry</button><button class="dc-btn secondary" id="go-m">\u2190 Menu</button></div></div>';document.getElementById('go-r').onclick=()=>this.newRun();document.getElementById('go-m').onclick=()=>this.showMenu()}
 
   newRun(){if(!MUSIC.playing)MUSIC.toggle();this.world={building:{name:this.curMap.name,floors:this.curMap.floors},sideData:[],player:mkPlayer(this.profile),ladders:[],fallObj:[],collectibles:[],enemies:[],particles:[],effects:[],cars:[],bossDefeated:false,bossActive:false,victoryTimer:0,gameOverTimer:0,ambBirds:[]};
-    for(let s=0;s<4;s++){const wins=[];for(let f=0;f<=this.curMap.floors;f++)wins.push({floor:f,xSlot:Math.floor(rand(0,3)),open:Math.random()<.7,openTimer:rand(2,8)});this.world.sideData.push({windows:wins})}
+    for(let s=0;s<4;s++){const wins=[];for(let f=1;f<=this.curMap.floors;f++){if(Math.random()<.42)continue;wins.push({floor:f,xSlot:Math.floor(rand(0,3)),open:Math.random()<.45,openTimer:rand(2,7),pu:Math.random()<.22})}this.world.sideData.push({windows:wins})}
     if(this.curMap.name==='Marsh')for(let i=0;i<5;i++)this.world.ambBirds.push({x:rand(0,W),y:rand(20,150),vx:rand(20,60)*(Math.random()<.5?1:-1)});
     this.profile.stats.totalClimbs++;
     this.moveSys=new MoveSys(this);this.ladSys=new LadSys(this);this.fallSys=new FallSys(this);this.collSys=new CollSys(this);this.strkSys=new StrkSys(this);this.bossSys=new BossSys(this);this.enemySys=new EnemySys(this);this.carSys=new CarSys(this);this.camSys=new CamSys(this);this.radioSys=new RadioSys(this);
@@ -854,19 +855,23 @@ class Game{
     // Ground below
     ctx.fillStyle=m.groundColor;ctx.fillRect(0,this.height-20,W,20)}
 
-  drawWindows(ctx){const w=this.world,m=this.curMap,sd=w.sideData[w.player.side];const ww=20,wh=15;for(const win of sd.windows){const fy=this.getFloorY(win.floor);if(fy>this.height+10||fy<-10)continue;const wx=SL+24+win.xSlot*(SW/4),wy=fy+3;
-      // recessed frame
-      ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(wx-1,wy-1,ww+2,wh+2);
-      if(win.open){const gr=ctx.createLinearGradient(wx,wy,wx,wy+wh);gr.addColorStop(0,m.winColor);gr.addColorStop(1,'rgba(255,216,77,.55)');ctx.fillStyle=gr;ctx.fillRect(wx,wy,ww,wh);
-        ctx.fillStyle='rgba(255,216,77,.18)';ctx.fillRect(wx-3,wy+wh,ww+6,5);// light spill
-        // occupant silhouette + eyes — signals an OPEN window is blocked (can't climb past)
-        ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(wx+4,wy+5,ww-8,wh-5);
-        ctx.fillStyle='#fff';ctx.fillRect(wx+6,wy+7,3,3);ctx.fillRect(wx+ww-9,wy+7,3,3);
-        ctx.fillStyle='#ff5cf4';ctx.fillRect(wx+7,wy+8,1,1);ctx.fillRect(wx+ww-8,wy+8,1,1)}
-      else{ctx.fillStyle=m.winOff;ctx.fillRect(wx,wy,ww,wh);ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(wx+2,wy+2,3,wh-5)}
-      // cross mullions + sill
-      ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx+ww/2-1,wy,1.5,wh);ctx.fillRect(wx,wy+wh/2-1,ww,1.5);
-      ctx.fillStyle=m.bAccent;ctx.fillRect(wx-2,wy+wh,ww+4,2)}}
+  drawWindows(ctx){const w=this.world,m=this.curMap,sd=w.sideData[w.player.side];const ww=22,wh=16,isMarsh=m.name==='Marsh';for(const win of sd.windows){const fy=this.getFloorY(win.floor);if(fy>this.height+10||fy<-10)continue;const wx=SL+22+win.xSlot*(SW/4),wy=fy+3;
+      // set INTO the wall: darker inset + top/bottom shadow so it reads as recessed, not floating
+      ctx.fillStyle='rgba(0,0,0,.30)';ctx.fillRect(wx-2,wy-2,ww+4,wh+4);
+      ctx.fillStyle=m.bSecondary;ctx.fillRect(wx-2,wy-2,ww+4,2);
+      if(!win.open){
+        // CLOSED = climbable: glass pane + reflection + mullions
+        const gr=ctx.createLinearGradient(wx,wy,wx,wy+wh);gr.addColorStop(0,'rgba(130,185,225,.55)');gr.addColorStop(1,m.winOff);ctx.fillStyle=gr;ctx.fillRect(wx,wy,ww,wh);
+        ctx.fillStyle='rgba(255,255,255,.30)';ctx.fillRect(wx+2,wy+2,4,wh-5);
+        ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx+ww/2-1,wy,1.5,wh);ctx.fillRect(wx,wy+wh/2-1,ww,1.5);
+      } else {
+        // OPEN = blocked: dark interior showing what's inside
+        ctx.fillStyle='#0b0a16';ctx.fillRect(wx,wy,ww,wh);
+        if(win.pu){const em=SP.emeraldPickup;if(em&&em._l&&!em._f)ctx.drawImage(em,wx+3,wy+1,ww-6,wh-2);else{ctx.fillStyle='#14d27a';ctx.beginPath();ctx.moveTo(wx+ww/2,wy+2);ctx.lineTo(wx+ww-5,wy+wh/2);ctx.lineTo(wx+ww/2,wy+wh-1);ctx.lineTo(wx+5,wy+wh/2);ctx.closePath();ctx.fill()}ctx.fillStyle='rgba(20,210,122,.28)';ctx.fillRect(wx-3,wy+wh,ww+6,4)}
+        else{const fr=SP.windowFrog;if(isMarsh&&fr&&fr._l&&!fr._f)ctx.drawImage(fr,wx+1,wy-3,ww-2,wh+5);else{ctx.fillStyle='#2a2336';ctx.fillRect(wx+3,wy+4,ww-6,wh-4);ctx.fillStyle='#fff';ctx.fillRect(wx+6,wy+6,3,3);ctx.fillRect(wx+ww-9,wy+6,3,3);ctx.fillStyle='#ff5cf4';ctx.fillRect(wx+7,wy+7,1,1);ctx.fillRect(wx+ww-8,wy+7,1,1)}}
+      }
+      // sill ledge
+      ctx.fillStyle=m.bAccent;ctx.fillRect(wx-3,wy+wh+1,ww+6,2)}}
 
   drawLadders(ctx){const w=this.world,p=w.player;for(const l of w.ladders){if(l.side!==p.side)continue;const lx=AL+l.x*AW,ly1=this.getFloorY(l.floor+1)+4,ly2=this.getFloorY(l.floor)+4;if(ly2>this.height+20||ly1<-20)continue;ctx.globalAlpha=l.destroyed?Math.max(0,l.fade):1;const cols={Basic:'#d4a848',Steel:'#c0c8d8',Magnetic:'#14d27a',Spring:'#ff7ae7',Quantum:'#8efcff',Plasma:'#b14cff',Crystal:'#ffd84d',Ghost:'#8efcff',Vine:'#14d27a'};const col=cols[l.type]||'#d4a848';if(l.type==='Ghost'||l.type==='Quantum')ctx.globalAlpha*=.5+Math.sin(l.phase)*.3;
     // Try ladder sprite
