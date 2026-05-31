@@ -18,13 +18,13 @@
     @keyframes titlePulse{0%,100%{text-shadow:0 0 15px #5b3fd1,0 0 30px #ff5cf4,0 0 50px #ffd84d,3px 3px 0 #000}50%{text-shadow:0 0 25px #5b3fd1,0 0 50px #ff5cf4,0 0 80px #ffd84d,4px 4px 0 #000}}
     @keyframes floatIntro{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.02)}}
     .hidden{display:none!important}
-    .panel{width:min(880px,95%);max-height:92%;overflow-y:auto;overflow-x:hidden;background:var(--pn);border:2px solid var(--pb);border-radius:12px;padding:20px;box-shadow:0 0 50px rgba(91,63,209,.3)}
+    .panel{position:relative;width:min(880px,95%);max-height:92%;overflow-y:auto;overflow-x:hidden;background:linear-gradient(180deg,rgba(27,17,71,.93),rgba(12,8,30,.97));border:1px solid rgba(127,216,255,.18);border-top:3px solid var(--hy);border-radius:16px;padding:22px;box-shadow:0 0 60px rgba(91,63,209,.45),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(6px)}
     .panel::-webkit-scrollbar{width:8px}.panel::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:4px}.panel::-webkit-scrollbar-thumb{background:var(--rp);border-radius:4px}
-    .title{font-size:44px;margin:0 0 8px;color:var(--hy);text-shadow:0 0 20px rgba(255,216,77,.7);letter-spacing:4px;animation:titlePulse 2s ease-in-out infinite}
-    .subtitle{color:var(--sb);margin-bottom:16px;font-size:14px;letter-spacing:2px}
+    .title{font-family:'Bungee','Courier New',monospace;font-size:38px;margin:0 0 10px;letter-spacing:2px;background:linear-gradient(180deg,#fff4c2,#ffd84d 45%,#ff9d3d 80%,#b8631f);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #5b1f00) drop-shadow(0 0 18px rgba(255,184,69,.5))}
+    .subtitle{color:var(--sb);margin-bottom:16px;font-size:13px;letter-spacing:3px;text-shadow:0 0 10px rgba(93,199,255,.5)}
     .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-    .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px;transition:all .2s;cursor:pointer}
-    .card:hover{background:rgba(255,255,255,.06);border-color:var(--sb);transform:translateY(-2px)}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;transition:transform .18s,border-color .18s,box-shadow .18s;cursor:pointer}
+    .card:hover{border-color:var(--sb);transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.4),0 0 18px rgba(93,199,255,.25)}
     .card.common{border-left:3px solid #a0a0a0}.card.rare{border-left:3px solid var(--sb)}.card.epic{border-left:3px solid #b14cff}.card.legendary{border-left:3px solid var(--hy)}.card.mythic{border-left:3px solid var(--np)}
     .item-icon{width:48px;height:48px;margin:0 auto 8px;background:rgba(0,0,0,.3);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
     .item-icon img{width:100%;height:100%;object-fit:contain}
@@ -32,24 +32,24 @@
     .item-cost{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--em)}
     .item-stats{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
     .stat-badge{font-size:9px;padding:2px 5px;background:rgba(91,63,209,.3);border-radius:3px;color:var(--sb)}
-    button.dc-btn{background:linear-gradient(180deg,#6e4bff,#442cae);color:white;border:2px solid rgba(255,255,255,.12);border-radius:8px;padding:12px 16px;font-size:14px;cursor:pointer;transition:all .15s;font-family:inherit}
-    button.dc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(110,75,255,.4)}
-    button.dc-btn:active{transform:translateY(1px)}
-    button.dc-btn.secondary{background:linear-gradient(180deg,#29b8ff,#1a7cb8)}
-    button.dc-btn.emerald{background:linear-gradient(180deg,#1de18d,#0f9d61)}
-    button.dc-btn.warn{background:linear-gradient(180deg,#ff8c66,#d14c3f)}
-    button.dc-btn.legendary{background:linear-gradient(180deg,#ffd84d,#b88345);color:#1a1740}
-    button.dc-btn.pink{background:linear-gradient(180deg,#ff5cf4,#a83da0)}
-    button.dc-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    button.dc-btn{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0)),linear-gradient(180deg,#6e4bff,#3a2a8c);color:#fff;border:none;border-radius:11px;padding:12px 18px;font-size:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 0 #1c1248,0 7px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .12s,filter .12s,box-shadow .12s}
+    button.dc-btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    button.dc-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1c1248,0 2px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18)}
+    button.dc-btn.secondary{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0)),linear-gradient(180deg,#36b8ff,#1a6fae);box-shadow:0 4px 0 #093454,0 7px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+    button.dc-btn.emerald{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0)),linear-gradient(180deg,#1de18d,#0c8a55);box-shadow:0 4px 0 #064027,0 7px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+    button.dc-btn.warn{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0)),linear-gradient(180deg,#ff8c66,#d14c3f);box-shadow:0 4px 0 #5e1a12,0 7px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+    button.dc-btn.legendary{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0)),linear-gradient(180deg,#ffce4a,#e8861f);color:#241400;box-shadow:0 4px 0 #6b3a00,0 7px 16px rgba(232,134,31,.4),inset 0 1px 0 rgba(255,255,255,.5)}
+    button.dc-btn.pink{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0)),linear-gradient(180deg,#ff5cf4,#a3239a);box-shadow:0 4px 0 #4d0a48,0 7px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.22)}
+    button.dc-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.center{text-align:center}
     .tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
     .tab{padding:8px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;font-size:13px;color:#ccc;font-family:inherit}
-    .tab:hover{background:rgba(255,255,255,.08)}.tab.active{background:var(--rp);border-color:var(--sb);color:var(--hy)}
+    .tab:hover{background:rgba(255,255,255,.08)}.tab.active{background:linear-gradient(180deg,#6e4bff,#3a2a8c);border-color:var(--hy);color:var(--hy);box-shadow:0 0 14px rgba(110,75,255,.4)}
     .achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
     .achievement{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px;display:flex;align-items:center;gap:10px}
     .achievement.unlocked{border-color:var(--em);background:rgba(20,210,122,.08)}
-    .map-card{background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden}
-    .map-card:hover{border-color:var(--hy);transform:scale(1.02)}
+    .map-card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));border:2px solid rgba(255,255,255,.12);border-radius:14px;padding:16px;cursor:pointer;transition:transform .22s,border-color .22s,box-shadow .22s;text-align:center;position:relative;overflow:hidden}
+    .map-card:hover{border-color:var(--hy);transform:translateY(-4px) scale(1.02);box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 22px rgba(255,216,77,.25)}
     .map-card.selected{border-color:var(--hy);box-shadow:0 0 20px rgba(255,216,77,.3)}
     .map-card .boss-tag{position:absolute;top:8px;right:8px;font-size:10px;background:rgba(255,107,107,.3);padding:2px 8px;border-radius:4px;color:var(--dn)}
     .music-ctrl{position:absolute;bottom:8px;right:8px;z-index:20;display:flex;gap:4px;pointer-events:auto}
@@ -168,7 +168,12 @@ const SP={
   // Arrays
   grass:[],bushes:[],tiles:[],leaves:[],trees:[],cars:[],menuOverlays:[],
   // Enemies - use procedural fallback
-  cowboyIdle:null,cowboyWalk:null,bird1Walk:null,droneIdle:null,
+  cowboyIdle:LS('sprites/enemies/cowboy_idle.png'),cowboyWalk:LS('sprites/enemies/cowboy_walk.png'),
+  droneIdle:LS('sprites/enemies/drone_idle.png'),droneWalk:LS('sprites/enemies/drone_walk.png'),
+  monkeyIdle:LS('sprites/enemies/monkey_idle.png'),monkeyWalk:LS('sprites/enemies/monkey_walk.png'),bird1Walk:null,
+  wallTileCity:LS('sprites/CITY_BG/Building Tiles 32x32.png'),wallTileGreen:LS('sprites/green-zone/Tileset.png'),
+  f1Idle:LS('sprites/fighters/f1_idle.png'),f1Walk:LS('sprites/fighters/f1_walk.png'),f1Atk:LS('sprites/fighters/f1_attack.png'),
+  f3Idle:LS('sprites/fighters/f3_idle.png'),f3Walk:LS('sprites/fighters/f3_walk.png'),f3Atk:LS('sprites/fighters/f3_attack.png'),
   // Legacy sprites
   marshArmor:null,marshGloves:null,puebloArmor:null,puebloGloves:null,
   cityArmor:null,cityGloves:null,
@@ -832,6 +837,7 @@ class Game{
     ctx.fillStyle=grad;ctx.fillRect(SL,topY,SW,Math.max(0,botY-topY));
     for(let f=bot;f<top;f++){const fy=this.getFloorY(f);if(fy>this.height+30||fy<-30)continue;
       ctx.fillStyle=f%2===0?m.bPrimary:m.bSecondary;ctx.fillRect(SL,fy,SW,FH);
+      {let _wi,_sx,_sy;if(m.name==='City'){_wi=SP.wallTileCity;_sx=128;_sy=0}else if(m.name==='Pueblo'){_wi=SP.wallTileCity;_sx=96;_sy=32}else{_wi=SP.wallTileGreen;_sx=0;_sy=64}if(_wi&&_wi._l&&!_wi._f){ctx.save();ctx.globalAlpha=.42;for(let dx2=SL;dx2<SL+SW;dx2+=32){const dw=Math.min(32,SL+SW-dx2);ctx.drawImage(_wi,_sx,_sy,dw,32,dx2,fy,dw,FH)}ctx.restore()}}
       // brick seams
       ctx.fillStyle='rgba(0,0,0,.12)';for(let bx=SL+((f%2)*16);bx<SL+SW-4;bx+=32)ctx.fillRect(bx,fy,1,FH);
       // floor ledge: bright top highlight + accent under-lip
@@ -878,10 +884,10 @@ class Game{
     if(!DSF(ctx,SP.ladder1,lx-6,ly1,12,ly2-ly1,'transparent')){ctx.fillStyle=col;ctx.fillRect(lx-5,ly1,3,ly2-ly1);ctx.fillRect(lx+2,ly1,3,ly2-ly1);for(let r=0;r<3;r++){const ry=ly1+(ly2-ly1)*(r+.5)/3;ctx.fillRect(lx-4,ry,8,2)}}
     if(!l.destroyed&&l.hp<l.maxHp){ctx.fillStyle='#ff6b6b';ctx.fillRect(lx-5,ly1-4,10*(l.hp/l.maxHp),2)}ctx.globalAlpha=1}}
 
-  drawEnemies(ctx){const w=this.world,p=w.player;for(const e of w.enemies){if(e.side!==p.side)continue;const ex=AL+e.x*AW,ey=this.getFloorY(e.floor)-4;if(ey>this.height+20||ey<-20)continue;
-    if(e.et==='cowboy'){if(!DSFRAME(ctx,SP.cowboyIdle,e.af,48,48,ex-16,ey-28,32,32,e.dir<0)){ctx.fillStyle='#8b6914';ctx.fillRect(ex-6,ey-16,12,16);ctx.fillStyle='#c4a574';ctx.fillRect(ex-8,ey-22,16,8);ctx.fillStyle='#F4F8FF';ctx.fillRect(ex-4,ey-14,8,4)}}
-    else if(e.et==='monkey'){ctx.fillStyle='#6a8a3a';ctx.fillRect(ex-6,ey-14,12,12);ctx.fillStyle='#8aaa4a';ctx.fillRect(ex-4,ey-10,8,6);ctx.fillStyle='#FFD84D';ctx.fillRect(ex-3,ey-12,2,2);ctx.fillRect(ex+1,ey-12,2,2);ctx.fillStyle='#6a8a3a';ctx.fillRect(ex+(e.dir>0?-8:6),ey-8,3,10);ctx.fillRect(ex-9+Math.sin(e.timer*8)*2,ey-8,3,6);ctx.fillRect(ex+6+Math.sin(e.timer*8+1)*2,ey-8,3,6)}
-    else if(e.et==='drone'){if(!DSFRAME(ctx,SP.droneIdle,e.af%4,48,48,ex-16,ey-24,32,24,false)){ctx.fillStyle='#5a5a8a';ctx.fillRect(ex-12,ey-8,24,10);ctx.fillStyle='#ff4a4a';ctx.fillRect(ex-2,ey-12,4,4);const pw=8+Math.sin(this.elapsed*20)*4;ctx.fillStyle='#8a8aaa';ctx.fillRect(ex-pw,ey-10,pw*2,2)}}}}
+  drawEnemies(ctx){const w=this.world,p=w.player;const wf6=Math.floor(this.elapsed/0.1)%6;for(const e of w.enemies){if(e.side!==p.side)continue;const ex=AL+e.x*AW,ey=this.getFloorY(e.floor)-4;if(ey>this.height+20||ey<-20)continue;
+    if(e.et==='cowboy'){if(!DSFRAME(ctx,SP.cowboyWalk,wf6,48,48,ex-15,ey-34,30,36,e.dir<0)){ctx.fillStyle='#8b6914';ctx.fillRect(ex-6,ey-16,12,16);ctx.fillStyle='#c4a574';ctx.fillRect(ex-8,ey-22,16,8);ctx.fillStyle='#F4F8FF';ctx.fillRect(ex-4,ey-14,8,4)}}
+    else if(e.et==='monkey'){if(!DSFRAME(ctx,SP.monkeyWalk,wf6,48,48,ex-15,ey-28,30,30,e.dir<0)){ctx.fillStyle='#6a8a3a';ctx.fillRect(ex-6,ey-14,12,12);ctx.fillStyle='#8aaa4a';ctx.fillRect(ex-4,ey-10,8,6);ctx.fillStyle='#FFD84D';ctx.fillRect(ex-3,ey-12,2,2);ctx.fillRect(ex+1,ey-12,2,2)}}
+    else if(e.et==='drone'){if(!DSFRAME(ctx,SP.droneWalk,this.paf%4,48,48,ex-16,ey-26,32,26,false)){ctx.fillStyle='#5a5a8a';ctx.fillRect(ex-12,ey-8,24,10);ctx.fillStyle='#ff4a4a';ctx.fillRect(ex-2,ey-12,4,4);const pw=8+Math.sin(this.elapsed*20)*4;ctx.fillStyle='#8a8aaa';ctx.fillRect(ex-pw,ey-10,pw*2,2)}}}}
 
   drawFallObj(ctx){const w=this.world,p=w.player;for(const o of w.fallObj){if(o.side!==p.side)continue;
     const ox=o.x-o.w/2,oy=o.y-o.h/2;
@@ -1041,25 +1047,29 @@ class VSfighter{
     }else if(this.char.specialType==='shadow'&&SP.ninjaSprite&&SP.ninjaSprite._l&&!SP.ninjaSprite._f){
       ctx.save();if(this.facing<0){ctx.translate(x+16,y-36);ctx.scale(-1,1);ctx.drawImage(SP.ninjaSprite,0,0,32,40)}else ctx.drawImage(SP.ninjaSprite,x-16,y-36,32,40);ctx.restore()
     }else{
-      const f=this.facing,sw=this.grounded&&Math.abs(this.vx)>30?Math.sin(this.walkT)*4:0,hy=y-bh-8;
-      // legs (walk-animated) + boots
-      ctx.fillStyle='#221b3a';ctx.fillRect(x-7,y-2,5,12+sw);ctx.fillRect(x+2,y-2,5,12-sw);
-      ctx.fillStyle='#15101f';ctx.fillRect(x-9,y+9+sw,7,4);ctx.fillRect(x+2,y+9-sw,7,4);
-      // back arm
-      ctx.fillStyle=c;ctx.fillRect(x-f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x-f*(bw+1)-2,hy+25,4,3);
-      // torso jacket (shaded) + chest emblem
-      ctx.fillStyle=c;ctx.fillRect(x-bw,hy+12,bw*2,18);
-      ctx.fillStyle='rgba(0,0,0,.20)';ctx.fillRect(x+(f>0?bw-4:-bw),hy+12,4,18);
-      ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x+(f>0?-bw:bw-3),hy+12,3,18);
-      ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(x-2,hy+18,4,4);
-      ctx.fillStyle='#15101f';ctx.fillRect(x-bw,hy+29,bw*2,4);// belt
-      // front arm (hidden during a swing — that limb is drawn separately)
-      if(!this.move){ctx.fillStyle=c;ctx.fillRect(x+f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x+f*(bw+1)-2,hy+25,4,3)}
-      // head: face + helmet dome + visor + glowing eye toward facing
-      ctx.fillStyle='#efe9ff';ctx.beginPath();ctx.arc(x,hy+6,8,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,hy+6,8,Math.PI,0);ctx.fill();ctx.fillRect(x-8,hy+5,16,2);
-      ctx.fillStyle='#15101f';ctx.fillRect(x-6,hy+5,12,5);
-      ctx.fillStyle=c;ctx.fillRect(x+(f>0?2:-5),hy+6,3,3)}
+      // Real fighter sprite sheet (craftpix humanoid: folder1=light/med, folder3=heavy); procedural body as fallback
+      const isHeavy=this.char.weight==='heavy',DW=Math.floor(54*wScale),DH=Math.floor(54*wScale),dx=x-DW/2,dy=y+12-DH,flip=this.facing<0;
+      let spr=null,frame=0;const moving=this.grounded&&Math.abs(this.vx)>30;
+      if(this.move){const af=isHeavy?4:6,prog=this.move.dur>0?this.move.t/this.move.dur:0;frame=Math.min(Math.floor(prog*af),af-1);spr=isHeavy?SP.f3Atk:SP.f1Atk}
+      else if(!this.grounded){frame=2;spr=isHeavy?SP.f3Walk:SP.f1Walk}
+      else if(moving){frame=Math.floor(this.walkT)%6;spr=isHeavy?SP.f3Walk:SP.f1Walk}
+      else{frame=Math.floor(this.clk*2)%4;spr=isHeavy?SP.f3Idle:SP.f1Idle}
+      if(!DSFRAME(ctx,spr,frame,48,48,dx,dy,DW,DH,flip)){
+        const f=this.facing,sw=this.grounded&&Math.abs(this.vx)>30?Math.sin(this.walkT)*4:0,hy=y-bh-8;
+        ctx.fillStyle='#221b3a';ctx.fillRect(x-7,y-2,5,12+sw);ctx.fillRect(x+2,y-2,5,12-sw);
+        ctx.fillStyle='#15101f';ctx.fillRect(x-9,y+9+sw,7,4);ctx.fillRect(x+2,y+9-sw,7,4);
+        ctx.fillStyle=c;ctx.fillRect(x-f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x-f*(bw+1)-2,hy+25,4,3);
+        ctx.fillStyle=c;ctx.fillRect(x-bw,hy+12,bw*2,18);
+        ctx.fillStyle='rgba(0,0,0,.20)';ctx.fillRect(x+(f>0?bw-4:-bw),hy+12,4,18);
+        ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x+(f>0?-bw:bw-3),hy+12,3,18);
+        ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(x-2,hy+18,4,4);
+        ctx.fillStyle='#15101f';ctx.fillRect(x-bw,hy+29,bw*2,4);
+        if(!this.move){ctx.fillStyle=c;ctx.fillRect(x+f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x+f*(bw+1)-2,hy+25,4,3)}
+        ctx.fillStyle='#efe9ff';ctx.beginPath();ctx.arc(x,hy+6,8,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,hy+6,8,Math.PI,0);ctx.fill();ctx.fillRect(x-8,hy+5,16,2);
+        ctx.fillStyle='#15101f';ctx.fillRect(x-6,hy+5,12,5);
+        ctx.fillStyle=c;ctx.fillRect(x+(f>0?2:-5),hy+6,3,3)}
+    }
     // Attacking limb (punch / kick / uppercut arc)
     if(this.move){const mv=this.move,act=(mv.t>=mv.a0&&mv.t<=mv.a1)?1:.45,reach=mv.range*act;
       ctx.strokeStyle=(mv.type==='heavy'||mv.type==='finish')?'#ff5cf4':'#ffd84d';ctx.lineWidth=5;ctx.lineCap='round';
