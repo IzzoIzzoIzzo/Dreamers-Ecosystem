@@ -853,7 +853,16 @@ class Game{
     // Ground below
     ctx.fillStyle=m.groundColor;ctx.fillRect(0,this.height-20,W,20)}
 
-  drawWindows(ctx){const w=this.world,m=this.curMap,sd=w.sideData[w.player.side];for(const win of sd.windows){const fy=this.getFloorY(win.floor);if(fy>this.height+10||fy<-10)continue;const wx=SL+25+win.xSlot*(SW/4);ctx.fillStyle=win.open?m.winColor:m.winOff;ctx.fillRect(wx,fy+3,18,14);if(win.open){ctx.fillStyle='rgba(255,216,77,.2)';ctx.fillRect(wx-3,fy+14,24,6)}}}
+  drawWindows(ctx){const w=this.world,m=this.curMap,sd=w.sideData[w.player.side];const ww=20,wh=15;for(const win of sd.windows){const fy=this.getFloorY(win.floor);if(fy>this.height+10||fy<-10)continue;const wx=SL+24+win.xSlot*(SW/4),wy=fy+3;
+      // recessed frame
+      ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(wx-1,wy-1,ww+2,wh+2);
+      if(win.open){const gr=ctx.createLinearGradient(wx,wy,wx,wy+wh);gr.addColorStop(0,m.winColor);gr.addColorStop(1,'rgba(255,216,77,.55)');ctx.fillStyle=gr;ctx.fillRect(wx,wy,ww,wh);
+        ctx.fillStyle='rgba(255,216,77,.18)';ctx.fillRect(wx-3,wy+wh,ww+6,5);// light spill
+        ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillRect(wx+2,wy+2,3,wh-5)}// glass glint
+      else{ctx.fillStyle=m.winOff;ctx.fillRect(wx,wy,ww,wh);ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(wx+2,wy+2,3,wh-5)}
+      // cross mullions + sill
+      ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx+ww/2-1,wy,1.5,wh);ctx.fillRect(wx,wy+wh/2-1,ww,1.5);
+      ctx.fillStyle=m.bAccent;ctx.fillRect(wx-2,wy+wh,ww+4,2)}}
 
   drawLadders(ctx){const w=this.world,p=w.player;for(const l of w.ladders){if(l.side!==p.side)continue;const lx=AL+l.x*AW,ly1=this.getFloorY(l.floor+1)+4,ly2=this.getFloorY(l.floor)+4;if(ly2>this.height+20||ly1<-20)continue;ctx.globalAlpha=l.destroyed?Math.max(0,l.fade):1;const cols={Basic:'#d4a848',Steel:'#c0c8d8',Magnetic:'#14d27a',Spring:'#ff7ae7',Quantum:'#8efcff',Plasma:'#b14cff',Crystal:'#ffd84d',Ghost:'#8efcff',Vine:'#14d27a'};const col=cols[l.type]||'#d4a848';if(l.type==='Ghost'||l.type==='Quantum')ctx.globalAlpha*=.5+Math.sin(l.phase)*.3;
     // Try ladder sprite
@@ -907,11 +916,11 @@ class Game{
 
 // ========== VS MODE ==========
 const VSSTAGES=[
-  {name:'Pueblo',color:'#c4a574',sky:'#1a0f05',ground:'#c4a574',bgSprite:'tilesetBg'},
-  {name:'Marsh',color:'#3d8a2d',sky:'#0d1a05',ground:'#3d5a2d',bgSprite:'tilesetBg'},
-  {name:'City',color:'#4a4a6a',sky:'#050510',ground:'#2a2a2a',bgSprite:'cityMega'},
-  {name:'EyeBall Lair',color:'#ff4a4a',sky:'#1a0510',ground:'#2a0a0a',bgSprite:'beams'},
-  {name:'Shipping Dock',color:'#6a7a8a',sky:'#0a1520',ground:'#3a4a5a',bgSprite:'shippingDock'}
+  {name:'Pueblo',color:'#c4a574',sky:'#1a0f05',ground:'#c4a574',img:'sprites/16.39/PUEBLO.png'},
+  {name:'Marsh',color:'#3d8a2d',sky:'#0d1a05',ground:'#3d5a2d',img:'sprites/2 Background/Night/3.png'},
+  {name:'City',color:'#4a4a6a',sky:'#050510',ground:'#2a2a2a',img:'sprites/CITY_BG/City background.png'},
+  {name:'EyeBall Lair',color:'#ff4a4a',sky:'#1a0510',ground:'#2a0a0a',img:'sprites/16.39/FINAL BOSS.png'},
+  {name:'Shipping Dock',color:'#6a7a8a',sky:'#0a1520',ground:'#3a4a5a',img:'sprites/2 Background/Day/1.png'}
 ];
 const VSCHARACTERS=[
   {name:'Dreamer',color:'#5dc7ff',special:'Float - hold jump to glide',specialType:'float',weight:'light',speed:1.2,icon:'\ud83d\udc7f'},
@@ -924,37 +933,86 @@ const VSCHARACTERS=[
   {name:'Volt',color:'#ffd84d',special:'Electric Zap - chain lightning',specialType:'zap',weight:'medium',speed:1.1,icon:'\u26a1'}
 ];
 class VSfighter{
-  constructor(id,charIdx,x,facing){this.id=id;this.charIdx=charIdx;this.char=VSCHARACTERS[charIdx];this.x=x;this.y=H-80;this.vx=0;this.vy=0;this.facing=facing;this.percent=0;this.grounded=true;this.atkCooldown=0;this.specialCooldown=0;this.invuln=0;this.hitStun=0;this.dead=false;this.floatHeld=false;this.teleportCD=0;this.shadowTimer=0;this.blastCooldown=0;this.charging=false;this.chargeT=0}
+  constructor(id,charIdx,x,facing){this.id=id;this.charIdx=charIdx;this.char=VSCHARACTERS[charIdx];this.x=x;this.y=H-80;this.vx=0;this.vy=0;this.facing=facing;this.percent=0;this.grounded=true;this.atkCooldown=0;this.specialCooldown=0;this.invuln=0;this.hitStun=0;this.dead=false;this.floatHeld=false;this.teleportCD=0;this.shadowTimer=0;this.blastCooldown=0;
+    this.move=null;this.combo=0;this.comboT=0;this.blocking=false}
+  // Melee move table: a0/a1 = active-frame window, kb/vert = knockback, dmg = % added
+  startMove(type){const M={
+      light :{dur:.22,a0:.04,a1:.11,range:42,kb:8, vert:.45,dmg:5},
+      light2:{dur:.24,a0:.04,a1:.12,range:44,kb:9, vert:.45,dmg:6},
+      finish:{dur:.34,a0:.08,a1:.17,range:48,kb:16,vert:.9, dmg:11},
+      heavy :{dur:.42,a0:.14,a1:.26,range:52,kb:18,vert:.55,dmg:13},
+      upper :{dur:.40,a0:.06,a1:.19,range:40,kb:15,vert:1.8,dmg:11},
+      air   :{dur:.34,a0:.05,a1:.22,range:44,kb:12,vert:.3, dmg:8}}[type];
+    this.move={type:type,t:0,dur:M.dur,a0:M.a0,a1:M.a1,range:M.range,kb:M.kb,vert:M.vert,dmg:M.dmg,hit:false};this.atkCooldown=M.dur}
+  // Receive a hit. Returns true if it connected (for combo bookkeeping).
+  hurt(bx,kb,vert,dmg,g){
+    if(this.invuln>0||this.dead||this.shadowTimer>0)return false;
+    let k=kb,d=dmg;
+    if(this.blocking){k*=.32;d*=.3;if(g){g.addPart(this.x+(bx<this.x?12:-12),this.y-24,'#8efcff',.3,3,0,-12);g.shake=Math.max(g.shake,2)}}
+    this.percent+=d;
+    const dir=(this.x-bx)>=0?1:-1,mag=k*(1+this.percent/120);
+    this.vx=dir*mag*16;this.vy=-mag*vert*16;this.grounded=false;
+    this.hitStun=Math.min(.55,.12+this.percent*0.0025+(this.blocking?0:.05));
+    this.move=null;
+    if(!this.blocking&&this.percent>=150)this.dead=true;
+    return true}
   update(dt,g,opp,input){
     if(this.dead)return;
-    if(this.hitStun>0){this.hitStun-=dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.vy+=400*dt;if(this.y>=H-80){this.y=H-80;this.vy=0;this.grounded=true;this.vx*=0.9}else this.grounded=false;this.x=Math.max(40,Math.min(W-40,this.x));return}
+    if(this.comboT>0){this.comboT-=dt;if(this.comboT<=0)this.combo=0}
+    if(this.hitStun>0){this.hitStun-=dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.vy+=900*dt;if(this.y>=H-80){this.y=H-80;this.vy=0;this.grounded=true;this.vx*=0.8}else this.grounded=false;this.x=Math.max(40,Math.min(W-40,this.x));return}
     if(this.invuln>0)this.invuln-=dt;
     if(this.atkCooldown>0)this.atkCooldown-=dt;
     if(this.specialCooldown>0)this.specialCooldown-=dt;
     if(this.teleportCD>0)this.teleportCD-=dt;
     if(this.blastCooldown>0)this.blastCooldown-=dt;
     if(this.shadowTimer>0){this.shadowTimer-=dt;if(this.shadowTimer<=0)this.y=H-80}
-    const left=input.left,right=input.right,jump=input.jump,attack=input.attack,special=input.special;
+    const left=input.left,right=input.right,jump=input.jump,down=input.down,attack=input.attack,special=input.special;
+    // Face opponent unless mid-move
+    if(opp&&!this.move&&Math.abs(this.x-opp.x)>5)this.facing=this.x<opp.x?1:-1;
+    // BLOCK: hold the direction AWAY from the opponent, grounded, not attacking
+    const awayHeld=opp?((opp.x>this.x)?left:right):false;
+    this.blocking=this.grounded&&!this.move&&awayHeld;
+    // ATTACK first (so up+attack = uppercut instead of a jump)
+    if(attack&&this.atkCooldown<=0&&!this.move){
+      if(!this.grounded)this.startMove('air');
+      else if(down)this.startMove('heavy');
+      else if(jump)this.startMove('upper');
+      else this.startMove(this.combo===0?'light':this.combo===1?'light2':'finish');
+    }
+    // MOVEMENT (frozen during a move / while blocking)
     const spd=250*(this.char.speed||1);
-    if(left){this.vx=-spd;this.facing=-1}else if(right){this.vx=spd;this.facing=1}else this.vx*=0.85;
-    const jumpStr=this.char.weight==='heavy'?-260:this.char.weight==='light'?-360:-320;
-    if((jump||(this.char.specialType==='float'&&this.floatHeld&&!this.grounded))&&this.grounded){this.vy=jumpStr;this.grounded=false;this.floatHeld=true}
+    if(!this.move&&!this.blocking){if(left){this.vx=-spd;this.facing=-1}else if(right){this.vx=spd;this.facing=1}else this.vx*=0.8}else this.vx*=0.85;
+    // JUMP (only if not starting a move this frame)
+    const jumpStr=this.char.weight==='heavy'?-300:this.char.weight==='light'?-420:-370;
+    if(jump&&this.grounded&&!this.move){this.vy=jumpStr;this.grounded=false;this.floatHeld=true}
     if(!jump)this.floatHeld=false;
-    if(this.char.specialType==='float'&&jump&&!this.grounded&&this.vy>0){this.vy-=80*dt;this.vy=Math.max(this.vy,-50)}
-    if(this.char.specialType==='teleport'&&special&&this.teleportCD<=0){this.x+=this.facing*80;this.x=Math.max(40,Math.min(W-40,this.x));this.invuln=0.3;this.teleportCD=1.5}
-    if(this.char.specialType==='shadow'&&special&&this.specialCooldown<=0){this.shadowTimer=0.5;this.specialCooldown=2;this.vy=0}
-    if(this.char.specialType==='blast'&&special&&this.blastCooldown<=0){this.blastCooldown=1.5;g.vsProj.push({x:this.x,y:this.y-20,vx:this.facing*350,vy:0,owner:this.id,life:1.5})}
-    if(this.char.specialType==='boulder'&&special&&this.specialCooldown<=0){this.specialCooldown=2.5;g.vsProj.push({x:this.x,y:this.y-20,vx:this.facing*200,vy:-80,owner:this.id,life:2,big:true})}
-    if(this.char.specialType==='phase'&&special&&this.specialCooldown<=0){this.invuln=1;this.specialCooldown=3;this.shadowTimer=0.8}
-    if(this.char.specialType==='tongue'&&special&&this.specialCooldown<=0&&opp){this.specialCooldown=2;const dx=opp.x-this.x;if(Math.abs(dx)<200){opp.x=this.x+this.facing*60;opp.vx=0;opp.hitStun=0.3}}
-    if(this.char.specialType==='zap'&&special&&this.specialCooldown<=0&&opp){this.specialCooldown=1.8;if(Math.abs(this.x-opp.x)<180){opp.knockback(this.x,this.y,12);g.addPart(opp.x,opp.y-20,'#ffd84d',.4,4,rand(-30,30),rand(-30,-10))}}
-    if(attack&&this.atkCooldown<=0){this.atkCooldown=0.4;g.vsAttacks.push({x:this.x+this.facing*20,y:this.y-20,w:30,h:40,owner:this.id,facing:this.facing})}
+    if(this.char.specialType==='float'&&jump&&!this.grounded&&this.vy>0)this.vy-=140*dt;
+    // SPECIAL (X) — character flavour
+    if(special&&!this.move)this.doSpecial(g,opp);
+    // Resolve active melee hitbox
+    if(this.move){const mv=this.move;mv.t+=dt;
+      if(!mv.hit&&mv.t>=mv.a0&&mv.t<=mv.a1&&opp&&!opp.dead){
+        const hx=this.x+this.facing*mv.range*0.6,vy=mv.type==='upper'?-mv.range*0.5:0;
+        if(Math.abs(opp.x-hx)<mv.range*0.7&&Math.abs(opp.y-(this.y+vy))<48){
+          if(opp.hurt(this.x,mv.kb,mv.vert,mv.dmg,g)){mv.hit=true;
+            if(mv.type==='light'||mv.type==='light2'){this.combo++;this.comboT=.55}else this.combo=0;
+            g.addPart(opp.x,opp.y-24,'#fff',.25,4,this.facing*40,-20);
+            g.addPart(opp.x,opp.y-24,opp.blocking?'#8efcff':'#ffd84d',.3,5,this.facing*50,-12);
+            g.shake=Math.max(g.shake,mv.kb>12?8:4)}}}
+      if(mv.t>=mv.dur)this.move=null}
+    // Physics
     this.x+=this.vx*dt;this.y+=this.vy*dt;
-    if(!this.grounded)this.vy+=400*dt;
+    if(!this.grounded)this.vy+=900*dt;
     if(this.y>=H-80){this.y=H-80;this.vy=0;this.grounded=true}
-    this.x=Math.max(40,Math.min(W-40,this.x));
-    if(opp&&Math.abs(this.x-opp.x)>5)this.facing=this.x<opp.x?1:-1;
-  }
+    this.x=Math.max(40,Math.min(W-40,this.x))}
+  doSpecial(g,opp){const t=this.char.specialType;
+    if(t==='teleport'&&this.teleportCD<=0){this.x+=this.facing*90;this.x=Math.max(40,Math.min(W-40,this.x));this.invuln=.3;this.teleportCD=1.5}
+    else if(t==='shadow'&&this.specialCooldown<=0){this.shadowTimer=.5;this.specialCooldown=2;this.vy=0}
+    else if(t==='blast'&&this.blastCooldown<=0){this.blastCooldown=1.4;g.vsProj.push({x:this.x+this.facing*18,y:this.y-22,vx:this.facing*360,vy:0,owner:this.id,life:1.4,kb:11,dmg:7})}
+    else if(t==='boulder'&&this.specialCooldown<=0){this.specialCooldown=2.4;g.vsProj.push({x:this.x,y:this.y-26,vx:this.facing*220,vy:-90,owner:this.id,life:2,big:true,kb:18,dmg:13})}
+    else if(t==='phase'&&this.specialCooldown<=0){this.invuln=1;this.specialCooldown=3}
+    else if(t==='tongue'&&this.specialCooldown<=0&&opp){this.specialCooldown=2;if(Math.abs(opp.x-this.x)<210){opp.x=this.x+this.facing*60;opp.vx=0;opp.hitStun=Math.max(opp.hitStun,.25)}}
+    else if(t==='zap'&&this.specialCooldown<=0&&opp){this.specialCooldown=1.8;if(Math.abs(this.x-opp.x)<190){opp.hurt(this.x,12,.6,9,g);g.addPart(opp.x,opp.y-22,'#ffd84d',.4,4,0,-12)}}}
   draw(ctx){
     if(this.dead)return;
     if(this.shadowTimer>0){ctx.globalAlpha=0.3}else if(this.invuln>0&&Math.floor(this.invuln*15)%2===0){ctx.globalAlpha=0.5}
@@ -972,32 +1030,52 @@ class VSfighter{
       ctx.fillStyle='#333';ctx.fillRect(x-bw,y-8,bw*2,10);
       ctx.fillStyle=c;ctx.fillRect(x-bw-2,y-6,4,12);ctx.fillRect(x+bw-2,y-6,4,12);
       ctx.fillStyle='#222';ctx.fillRect(x-8,y+4,16,4);ctx.fillRect(x-8,y+8,16,4)}
-    ctx.globalAlpha=1;
-  }
-  knockback(bx,by,baseKB){const kb=baseKB*(1+this.percent/100);this.hitStun=0.3+this.percent*0.003;this.vx=(this.x-bx)>0?kb:kb*-1;this.vy=-kb*0.7;this.grounded=false;this.percent+=Math.floor(8+baseKB/30);if(this.percent>=150)this.dead=true}
+    // Attacking limb (punch / kick / uppercut arc)
+    if(this.move){const mv=this.move,act=(mv.t>=mv.a0&&mv.t<=mv.a1)?1:.45,reach=mv.range*act;
+      ctx.strokeStyle=(mv.type==='heavy'||mv.type==='finish')?'#ff5cf4':'#ffd84d';ctx.lineWidth=5;ctx.lineCap='round';
+      const sx=x,sy=y-bh+ (mv.type==='air'?0:-4);let ex,ey;
+      if(mv.type==='upper'){ex=x+this.facing*reach*.5;ey=y-bh-reach*.7}
+      else if(mv.type==='air'){ex=x+this.facing*reach*.7;ey=y+8}
+      else{ex=x+this.facing*reach;ey=y-bh-2}
+      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ex,ey,4,0,Math.PI*2);ctx.fill();
+      if(act>.9){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(ex,ey,8,0,Math.PI*2);ctx.stroke()}}
+    // Block shield
+    if(this.blocking){ctx.strokeStyle='rgba(142,252,255,.85)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x+this.facing*13,y-bh/2-4,bh*0.72,this.facing>0?-1:Math.PI-1,this.facing>0?1:Math.PI+1);ctx.stroke()}
+    ctx.globalAlpha=1}
 }
 Game.prototype.vsState=null;Game.prototype.vsFighters=[];Game.prototype.vsAttacks=[];Game.prototype.vsProj=[];Game.prototype.vsStage=0;Game.prototype.vsWinner=null;
 Game.prototype.showVSMode=function(){this.state='vs-select';this.hideAll();const el=document.getElementById('vs-mode-screen');el.classList.remove('hidden');let h='<div class="panel center" style="max-width:700px;"><h1 class="title" style="font-size:32px;">\u2694 VS MODE</h1><div style="font-size:14px;color:#8a7acc;margin-bottom:20px;">Select Character (8 Fighters)</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:600px;margin:0 auto;">';for(let i=0;i<VSCHARACTERS.length;i++){const c=VSCHARACTERS[i];h+='<div class="map-card" data-char="'+i+'" style="border-color:'+c.color+';cursor:pointer;padding:12px;"><div style="width:50px;height:50px;margin:0 auto 6px;background:'+c.color+';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;">'+c.icon+'</div><div style="font-weight:bold;font-size:13px;color:'+c.color+';">'+c.name+'</div><div style="font-size:9px;color:#aaa;margin-top:3px;">'+c.special+'</div><div style="font-size:8px;color:#666;margin-top:2px;">'+c.weight+' | spd:'+(c.speed||1)+'</div></div>'}h+='</div><div style="margin-top:16px;font-size:12px;color:#666;">Player 1: Click character | Player 2: CPU</div><button class="dc-btn" id="vs-start" style="margin-top:16px;font-size:16px;padding:12px 32px;" disabled>Select Stage</button></div>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{el.querySelectorAll('.map-card').forEach(x=>{x.style.borderColor=VSCHARACTERS[parseInt(x.dataset.char)].color;x.style.boxShadow='none'});this.vsChar1=parseInt(c.dataset.char);c.style.borderColor='#ffd84d';c.style.boxShadow='0 0 20px #ffd84d';document.getElementById('vs-start').disabled=false}});document.getElementById('vs-start').onclick=()=>this.showVSStage()};
-Game.prototype.showVSStage=function(){if(this.vsChar1===undefined)return;this.vsChar2=Math.floor(Math.random()*VSCHARACTERS.length);const el=document.getElementById('vs-mode-screen');let h='<div class="panel center" style="max-width:600px;"><h1 class="title" style="font-size:28px;">Select Stage</h1><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:450px;margin:20px auto;">';for(let i=0;i<VSSTAGES.length;i++){const s=VSSTAGES[i];h+='<div class="map-card" data-stage="'+i+'" style="border-color:'+s.color+';cursor:pointer;padding:12px;"><div style="width:100%;height:60px;background:linear-gradient(180deg,'+s.sky+','+s.ground+');border-radius:6px;margin-bottom:8px;"></div><div style="font-weight:bold;color:'+s.color+';">'+s.name+'</div></div>'}h+='</div><button class="dc-btn pink" id="vs-fight" style="font-size:18px;padding:14px 40px;margin-top:10px;">\u2694 FIGHT!</button>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{this.vsStage=parseInt(c.dataset.stage);el.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected')}});document.getElementById('vs-fight').onclick=()=>this.startVSBattle()};
-Game.prototype.startVSBattle=function(){this.state='vs-battle';this.hideAll();this.vsFighters=[new VSfighter(1,this.vsChar1,200,1),new VSfighter(2,this.vsChar2,W-200,-1)];this.vsAttacks=[];this.vsProj=[];this.vsWinner=null;this.hud.hide()};
+Game.prototype.showVSStage=function(){if(this.vsChar1===undefined)return;this.vsChar2=Math.floor(Math.random()*VSCHARACTERS.length);const el=document.getElementById('vs-mode-screen');let h='<div class="panel center" style="max-width:600px;"><h1 class="title" style="font-size:28px;">Select Stage</h1><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:450px;margin:20px auto;">';for(let i=0;i<VSSTAGES.length;i++){const s=VSSTAGES[i];h+='<div class="map-card" data-stage="'+i+'" style="border-color:'+s.color+';cursor:pointer;padding:12px;"><div style="width:100%;height:66px;border-radius:6px;margin-bottom:8px;overflow:hidden;background:linear-gradient(180deg,'+s.sky+','+s.ground+');"><img src="'+encodeURI(s.img)+'" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;" onerror="this.style.display=\'none\'"></div><div style="font-weight:bold;color:'+s.color+';">'+s.name+'</div></div>'}h+='</div><button class="dc-btn pink" id="vs-fight" style="font-size:18px;padding:14px 40px;margin-top:10px;">\u2694 FIGHT!</button>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{this.vsStage=parseInt(c.dataset.stage);el.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected')}});document.getElementById('vs-fight').onclick=()=>this.startVSBattle()};
+Game.prototype.startVSBattle=function(){this.state='vs-battle';this.hideAll();this.vsFighters=[new VSfighter(1,this.vsChar1,200,1),new VSfighter(2,this.vsChar2,W-200,-1)];this.vsAttacks=[];this.vsProj=[];this.vsWinner=null;this._vsEnding=false;this.hud.hide()};
 Game.prototype.updateVS=function(dt){if(this.state!=='vs-battle')return;
   const p1=this.vsFighters[0],cpu=this.vsFighters[1];
   // P1 = human; read live keys (held for movement/jump, consumed for attack/special)
-  const hin={left:this.isPressed('ArrowLeft')||this.isPressed('KeyA'),right:this.isPressed('ArrowRight')||this.isPressed('KeyD'),jump:this.isPressed('ArrowUp')||this.isPressed('KeyW'),attack:this.consumePress('KeyZ'),special:this.consumePress('KeyX')};
+  const hin={left:this.isPressed('ArrowLeft')||this.isPressed('KeyA'),right:this.isPressed('ArrowRight')||this.isPressed('KeyD'),jump:this.isPressed('ArrowUp')||this.isPressed('KeyW'),down:this.isPressed('ArrowDown')||this.isPressed('KeyS'),attack:this.consumePress('KeyZ'),special:this.consumePress('KeyX')};
   // P2 = CPU; fully independent AI input — NEVER touches the shared key state
-  const cin={left:false,right:false,jump:false,attack:false,special:false};
+  const cin={left:false,right:false,jump:false,down:false,attack:false,special:false};
   if(cpu&&!cpu.dead&&p1&&!p1.dead){const dx=p1.x-cpu.x,dist=Math.abs(dx),dy=p1.y-cpu.y;
-    if(dist>70){if(dx>0)cin.right=true;else cin.left=true}else if(dist<42){if(dx>0)cin.left=true;else cin.right=true}
+    if(dist>64){if(dx>0)cin.right=true;else cin.left=true}else if(dist<38){if(dx>0)cin.left=true;else cin.right=true}// approach / back off (back-off = block)
     if(dy<-50&&cpu.grounded&&Math.random()<.06)cin.jump=true;
-    if(cpu.grounded&&Math.random()<.012)cin.jump=true;
-    if(dist<70&&cpu.atkCooldown<=0&&Math.random()<.55)cin.attack=true;
-    if(dist<175&&cpu.specialCooldown<=0&&cpu.teleportCD<=0&&cpu.blastCooldown<=0&&Math.random()<.25)cin.special=true;}
-  if(p1)p1.update(dt,this,cpu,hin);if(cpu)cpu.update(dt,this,p1,cin);for(let i=this.vsAttacks.length-1;i>=0;i--){const a=this.vsAttacks[i];a.x+=a.facing*dt*400;for(const f of this.vsFighters){if(f.id===a.owner||f.dead||f.invuln>0||f.shadowTimer>0)continue;if(Math.abs(a.x-f.x)<30&&Math.abs(a.y-f.y)<40){f.knockback(a.x,a.y,15);this.addPart(f.x,f.y-20,'#ffd84d',.3,3,rand(-20,20),rand(-20,-5));a.hit=true;break}}if(Math.abs(a.x)<0||Math.abs(a.x)>W)a.hit=true}this.vsAttacks=this.vsAttacks.filter(a=>!a.hit);for(let i=this.vsProj.length-1;i>=0;i--){const p=this.vsProj[i];p.x+=p.vx*dt;if(p.big){p.vy=(p.vy||0)+300*dt;p.y+=p.vy*dt}p.life-=dt;for(const f of this.vsFighters){if(f.id===p.owner||f.dead)continue;if(Math.abs(p.x-f.x)<25&&Math.abs(p.y-f.y)<35){f.knockback(p.x,p.y,18);this.addPart(f.x,f.y-20,'#14d27a',.4,4,rand(-30,20),rand(-30,-10));p.life=0;break}}if(p.life<=0)this.vsProj.splice(i,1)}if(this.vsFighters.some(f=>f.dead)){this.vsWinner=this.vsFighters.find(f=>!f.dead);setTimeout(()=>this.showVSResult(),2000)}};
+    if(cpu.grounded&&Math.random()<.01)cin.jump=true;
+    if(dist<56&&cpu.atkCooldown<=0){const r=Math.random();if(r<.45)cin.attack=true;else if(r<.6){cin.attack=true;cin.down=true}else if(r<.7){cin.attack=true;cin.jump=true}}
+    if(dist<175&&cpu.specialCooldown<=0&&cpu.teleportCD<=0&&cpu.blastCooldown<=0&&Math.random()<.2)cin.special=true;}
+  if(p1)p1.update(dt,this,cpu,hin);if(cpu)cpu.update(dt,this,p1,cin);for(let i=this.vsProj.length-1;i>=0;i--){const p=this.vsProj[i];p.x+=p.vx*dt;if(p.big){p.vy=(p.vy||0)+300*dt;p.y+=p.vy*dt}p.life-=dt;for(const f of this.vsFighters){if(f.id===p.owner||f.dead)continue;if(Math.abs(p.x-f.x)<26&&Math.abs(p.y-f.y)<36){f.hurt(p.x,p.kb||14,.6,p.dmg||8,this);this.addPart(f.x,f.y-20,'#14d27a',.4,4,rand(-30,20),rand(-30,-10));p.life=0;break}}if(p.x<-30||p.x>W+30||p.life<=0)this.vsProj.splice(i,1)}if(this.vsFighters.some(f=>f.dead)&&!this._vsEnding){this._vsEnding=true;this.vsWinner=this.vsFighters.find(f=>!f.dead);setTimeout(()=>this.showVSResult(),1800)}};
 Game.prototype.renderVS=function(ctx){if(this.state!=='vs-battle')return;const s=VSSTAGES[this.vsStage];
-  const bgSpr=s.bgSprite?SP[s.bgSprite]:null;
-  if(bgSpr&&bgSpr._l&&!bgSpr._f){ctx.drawImage(bgSpr,0,0,W,H)}
+  const bg=s.img?LS(s.img):null;
+  if(bg&&bg._l&&!bg._f){ctx.drawImage(bg,0,0,W,H);ctx.fillStyle='rgba(8,6,24,.42)';ctx.fillRect(0,0,W,H)}
   else{const grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,s.sky);grad.addColorStop(1,s.ground);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H)}
-  ctx.fillStyle=s.ground;ctx.fillRect(0,H-40,W,40);for(let i=0;i<5;i++){ctx.fillStyle=s.color;ctx.fillRect(100+i*180,H-60,60,20);ctx.fillRect(110+i*180,H-80,10,20);ctx.fillRect(140+i*180,H-80,10,20)}for(const f of this.vsFighters)f.draw(ctx);for(const a of this.vsAttacks){ctx.fillStyle='#ffd84d';ctx.beginPath();ctx.arc(a.x,a.y,8,0,Math.PI*2);ctx.fill()}for(const p of this.vsProj){if(p.big){ctx.fillStyle='#c4a574';ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8b6914';ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fill()}else{ctx.fillStyle='#14d27a';ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8efcff';ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill()}}ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(20,20,140,50);ctx.fillRect(W-160,20,140,50);ctx.font='bold 20px "Courier New",monospace';ctx.textAlign='left';const p1=this.vsFighters[0],p2=this.vsFighters[1];ctx.fillStyle=p1.char.color;ctx.fillText(p1.char.name,30,42);ctx.fillStyle='#fff';ctx.fillText(Math.floor(p1.percent)+'%',30,62);ctx.textAlign='right';ctx.fillStyle=p2.char.color;ctx.fillText(p2.char.name,W-30,42);ctx.fillStyle='#fff';ctx.fillText(Math.floor(p2.percent)+'%',W-30,62);ctx.textAlign='left'};
+  // floor + platforms
+  ctx.fillStyle=s.ground;ctx.fillRect(0,H-40,W,40);ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,H-40,W,2);ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,H-38,W,3);
+  for(let i=0;i<5;i++){ctx.fillStyle=s.color;ctx.fillRect(100+i*180,H-58,60,8);ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(100+i*180,H-50,60,2)}
+  for(const p of this.vsProj){if(p.big){ctx.fillStyle='#c4a574';ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8b6914';ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fill()}else{ctx.fillStyle='#14d27a';ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8efcff';ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill()}}
+  for(const f of this.vsFighters)f.draw(ctx);
+  // HUD: name + damage % + combo
+  const p1=this.vsFighters[0],p2=this.vsFighters[1];
+  const hud=(f,align)=>{ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(align==='left'?20:W-180,18,160,54);ctx.textAlign=align;const tx=align==='left'?30:W-30;ctx.font='bold 18px "Courier New",monospace';ctx.fillStyle=f.char.color;ctx.fillText(f.char.name,tx,40);ctx.font='bold 22px "Courier New",monospace';ctx.fillStyle=f.percent>=100?'#ff6b6b':'#fff';ctx.fillText(Math.floor(f.percent)+'%',tx,64);if(f.combo>=2){ctx.font='bold 13px "Courier New",monospace';ctx.fillStyle='#ffd84d';ctx.fillText(f.combo+' HIT!',tx,86)}};
+  hud(p1,'left');hud(p2,'right');
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='11px "Courier New",monospace';ctx.textAlign='center';
+  ctx.fillText('←→ move   ↑ jump   Z attack ( ↓Z heavy · ↑Z upper )   X special   hold back = block',W/2,H-12);ctx.textAlign='left'};
 Game.prototype.showVSResult=function(){this.state='vs-result';const el=document.getElementById('vs-mode-screen');const w=this.vsWinner;el.classList.remove('hidden');el.innerHTML='<div class="panel center"><h1 class="title" style="font-size:36px;color:'+(w?w.char.color:'#ffd84d')+'">'+(w?'\u2605 '+w.char.name+' WINS!':'DRAW!')+'</h1><div style="font-size:18px;margin:20px 0;">P1: '+VSCHARACTERS[this.vsChar1].name+' - '+Math.floor(this.vsFighters[0].percent)+'%</div><div style="font-size:18px;">P2: '+VSCHARACTERS[this.vsChar2].name+' - '+Math.floor(this.vsFighters[1].percent)+'%</div><button class="dc-btn" id="vs-replay" style="margin-top:20px;">Rematch</button><button class="dc-btn secondary" id="vs-exit" style="margin-left:10px;">Exit</button></div>';document.getElementById('vs-replay').onclick=()=>this.startVSBattle();document.getElementById('vs-exit').onclick=()=>this.showMenu()};
 
 // ════════════════════════════════════════════════════════════════
