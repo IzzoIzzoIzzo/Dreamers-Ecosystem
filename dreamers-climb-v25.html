@@ -416,7 +416,8 @@ class LadSys{
   removeNear(){const w=this.g.world,p=w.player;let best=null,bd=Infinity;for(const l of w.ladders){if(l.side!==p.side||l.destroyed)continue;const d=Math.abs(l.floor-p.floor)+Math.abs(l.x-p.x);if(d<bd){bd=d;best=l}}if(best&&bd<.25)best.destroyed=true}
   canClimb(dir){const w=this.g.world,p=w.player;if(p.floor+dir<0)return false;
     // Only block if directly at a closed window - check x position
-    if(dir>0){const sd=w.sideData[p.side],win=sd.windows.find(wi=>wi.floor===p.floor&&!wi.open);if(win){const wx=SL+25+win.xSlot*(SW/4),px=this.g.getPX();if(Math.abs(wx-px)<15)return false}}
+    // v25: OPEN windows block climbing (something's in the way); closed windows are climbable
+    if(dir>0){const sd=w.sideData[p.side],win=sd.windows.find(wi=>wi.floor===p.floor&&wi.open);if(win){const wx=SL+24+win.xSlot*(SW/4)+10,px=this.g.getPX();if(Math.abs(wx-px)<18)return false}}
     const paints=w.effects.filter(e=>e.type==='paint'&&e.side===p.side&&e.floor===p.floor);const lad=w.ladders.find(l=>l.side===p.side&&l.floor===p.floor&&!l.destroyed&&Math.abs(l.x-p.x)<(paints.length>0?.14:.1));if(lad)return true;const grp=(SHOES[p.shoes]?.s?.grp||40);if((grp>60||grp>40&&Math.random()<.18)&&dir>0)return true;return false}
   dmgAt(side,floor,x){const w=this.g.world;const l=w.ladders.find(l=>l.side===side&&l.floor===floor&&!l.destroyed&&Math.abs(l.x-x)<.08);if(!l)return;if(w.player.radio==='Zen'&&Math.random()<.3)return;l.hp--;if(l.hp<=0)l.destroyed=true}
 }
@@ -858,7 +859,10 @@ class Game{
       ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(wx-1,wy-1,ww+2,wh+2);
       if(win.open){const gr=ctx.createLinearGradient(wx,wy,wx,wy+wh);gr.addColorStop(0,m.winColor);gr.addColorStop(1,'rgba(255,216,77,.55)');ctx.fillStyle=gr;ctx.fillRect(wx,wy,ww,wh);
         ctx.fillStyle='rgba(255,216,77,.18)';ctx.fillRect(wx-3,wy+wh,ww+6,5);// light spill
-        ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillRect(wx+2,wy+2,3,wh-5)}// glass glint
+        // occupant silhouette + eyes — signals an OPEN window is blocked (can't climb past)
+        ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(wx+4,wy+5,ww-8,wh-5);
+        ctx.fillStyle='#fff';ctx.fillRect(wx+6,wy+7,3,3);ctx.fillRect(wx+ww-9,wy+7,3,3);
+        ctx.fillStyle='#ff5cf4';ctx.fillRect(wx+7,wy+8,1,1);ctx.fillRect(wx+ww-8,wy+8,1,1)}
       else{ctx.fillStyle=m.winOff;ctx.fillRect(wx,wy,ww,wh);ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(wx+2,wy+2,3,wh-5)}
       // cross mullions + sill
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx+ww/2-1,wy,1.5,wh);ctx.fillRect(wx,wy+wh/2-1,ww,1.5);
@@ -934,7 +938,7 @@ const VSCHARACTERS=[
 ];
 class VSfighter{
   constructor(id,charIdx,x,facing){this.id=id;this.charIdx=charIdx;this.char=VSCHARACTERS[charIdx];this.x=x;this.y=H-80;this.vx=0;this.vy=0;this.facing=facing;this.percent=0;this.grounded=true;this.atkCooldown=0;this.specialCooldown=0;this.invuln=0;this.hitStun=0;this.dead=false;this.floatHeld=false;this.teleportCD=0;this.shadowTimer=0;this.blastCooldown=0;
-    this.move=null;this.combo=0;this.comboT=0;this.blocking=false}
+    this.move=null;this.combo=0;this.comboT=0;this.blocking=false;this.walkT=0;this.clk=0;this.tapL=-9;this.tapR=-9;this.prevLeft=false;this.prevRight=false;this.dashT=0;this.dashCD=0}
   // Melee move table: a0/a1 = active-frame window, kb/vert = knockback, dmg = % added
   startMove(type){const M={
       light :{dur:.22,a0:.04,a1:.11,range:42,kb:8, vert:.45,dmg:5},
@@ -942,7 +946,8 @@ class VSfighter{
       finish:{dur:.34,a0:.08,a1:.17,range:48,kb:16,vert:.9, dmg:11},
       heavy :{dur:.42,a0:.14,a1:.26,range:52,kb:18,vert:.55,dmg:13},
       upper :{dur:.40,a0:.06,a1:.19,range:40,kb:15,vert:1.8,dmg:11},
-      air   :{dur:.34,a0:.05,a1:.22,range:44,kb:12,vert:.3, dmg:8}}[type];
+      air   :{dur:.34,a0:.05,a1:.22,range:44,kb:12,vert:.3, dmg:8},
+      dair  :{dur:.32,a0:.05,a1:.20,range:42,kb:13,vert:-1.1,dmg:9}}[type];
     this.move={type:type,t:0,dur:M.dur,a0:M.a0,a1:M.a1,range:M.range,kb:M.kb,vert:M.vert,dmg:M.dmg,hit:false};this.atkCooldown=M.dur}
   // Receive a hit. Returns true if it connected (for combo bookkeeping).
   hurt(bx,kb,vert,dmg,g){
@@ -954,6 +959,7 @@ class VSfighter{
     this.vx=dir*mag*16;this.vy=-mag*vert*16;this.grounded=false;
     this.hitStun=Math.min(.55,.12+this.percent*0.0025+(this.blocking?0:.05));
     this.move=null;
+    if(g)g._vsHitstop=Math.max(g._vsHitstop||0,this.blocking?.03:.06);
     if(!this.blocking&&this.percent>=150)this.dead=true;
     return true}
   update(dt,g,opp,input){
@@ -967,6 +973,11 @@ class VSfighter{
     if(this.blastCooldown>0)this.blastCooldown-=dt;
     if(this.shadowTimer>0){this.shadowTimer-=dt;if(this.shadowTimer<=0)this.y=H-80}
     const left=input.left,right=input.right,jump=input.jump,down=input.down,attack=input.attack,special=input.special;
+    this.clk+=dt;if(this.dashT>0)this.dashT-=dt;if(this.dashCD>0)this.dashCD-=dt;
+    // Dash: double-tap a direction → quick burst + brief i-frames
+    if(left&&!this.prevLeft){if(this.clk-this.tapL<.26&&this.dashCD<=0&&!this.move){this.dashT=.14;this.dashCD=.55;this.vx=-620*(this.char.speed||1);this.facing=-1;this.invuln=Math.max(this.invuln,.12)}this.tapL=this.clk}
+    if(right&&!this.prevRight){if(this.clk-this.tapR<.26&&this.dashCD<=0&&!this.move){this.dashT=.14;this.dashCD=.55;this.vx=620*(this.char.speed||1);this.facing=1;this.invuln=Math.max(this.invuln,.12)}this.tapR=this.clk}
+    this.prevLeft=left;this.prevRight=right;
     // Face opponent unless mid-move
     if(opp&&!this.move&&Math.abs(this.x-opp.x)>5)this.facing=this.x<opp.x?1:-1;
     // BLOCK: hold the direction AWAY from the opponent, grounded, not attacking
@@ -974,14 +985,15 @@ class VSfighter{
     this.blocking=this.grounded&&!this.move&&awayHeld;
     // ATTACK first (so up+attack = uppercut instead of a jump)
     if(attack&&this.atkCooldown<=0&&!this.move){
-      if(!this.grounded)this.startMove('air');
+      if(!this.grounded)this.startMove(down?'dair':'air');
       else if(down)this.startMove('heavy');
       else if(jump)this.startMove('upper');
       else this.startMove(this.combo===0?'light':this.combo===1?'light2':'finish');
     }
     // MOVEMENT (frozen during a move / while blocking)
     const spd=250*(this.char.speed||1);
-    if(!this.move&&!this.blocking){if(left){this.vx=-spd;this.facing=-1}else if(right){this.vx=spd;this.facing=1}else this.vx*=0.8}else this.vx*=0.85;
+    if(this.dashT>0){/* ride dash velocity */}else if(!this.move&&!this.blocking){if(left){this.vx=-spd;this.facing=-1}else if(right){this.vx=spd;this.facing=1}else this.vx*=0.8}else this.vx*=0.85;
+    if(this.grounded&&Math.abs(this.vx)>30)this.walkT+=dt*14;else this.walkT=0;
     // JUMP (only if not starting a move this frame)
     const jumpStr=this.char.weight==='heavy'?-300:this.char.weight==='light'?-420:-370;
     if(jump&&this.grounded&&!this.move){this.vy=jumpStr;this.grounded=false;this.floatHeld=true}
@@ -1024,12 +1036,25 @@ class VSfighter{
     }else if(this.char.specialType==='shadow'&&SP.ninjaSprite&&SP.ninjaSprite._l&&!SP.ninjaSprite._f){
       ctx.save();if(this.facing<0){ctx.translate(x+16,y-36);ctx.scale(-1,1);ctx.drawImage(SP.ninjaSprite,0,0,32,40)}else ctx.drawImage(SP.ninjaSprite,x-16,y-36,32,40);ctx.restore()
     }else{
-      ctx.fillStyle=c;ctx.fillRect(x-bw,y-bh-8,bw*2,bh);
-      ctx.fillStyle='#333';ctx.fillRect(x-bw+2,y-bh,bw*2-4,8);
-      ctx.fillStyle='#fff';ctx.fillRect(x-6,y-bh+2,5,5);ctx.fillRect(x+1,y-bh+2,5,5);
-      ctx.fillStyle='#333';ctx.fillRect(x-bw,y-8,bw*2,10);
-      ctx.fillStyle=c;ctx.fillRect(x-bw-2,y-6,4,12);ctx.fillRect(x+bw-2,y-6,4,12);
-      ctx.fillStyle='#222';ctx.fillRect(x-8,y+4,16,4);ctx.fillRect(x-8,y+8,16,4)}
+      const f=this.facing,sw=this.grounded&&Math.abs(this.vx)>30?Math.sin(this.walkT)*4:0,hy=y-bh-8;
+      // legs (walk-animated) + boots
+      ctx.fillStyle='#221b3a';ctx.fillRect(x-7,y-2,5,12+sw);ctx.fillRect(x+2,y-2,5,12-sw);
+      ctx.fillStyle='#15101f';ctx.fillRect(x-9,y+9+sw,7,4);ctx.fillRect(x+2,y+9-sw,7,4);
+      // back arm
+      ctx.fillStyle=c;ctx.fillRect(x-f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x-f*(bw+1)-2,hy+25,4,3);
+      // torso jacket (shaded) + chest emblem
+      ctx.fillStyle=c;ctx.fillRect(x-bw,hy+12,bw*2,18);
+      ctx.fillStyle='rgba(0,0,0,.20)';ctx.fillRect(x+(f>0?bw-4:-bw),hy+12,4,18);
+      ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x+(f>0?-bw:bw-3),hy+12,3,18);
+      ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(x-2,hy+18,4,4);
+      ctx.fillStyle='#15101f';ctx.fillRect(x-bw,hy+29,bw*2,4);// belt
+      // front arm (hidden during a swing — that limb is drawn separately)
+      if(!this.move){ctx.fillStyle=c;ctx.fillRect(x+f*(bw+1)-2,hy+13,4,13);ctx.fillStyle='#f4eeff';ctx.fillRect(x+f*(bw+1)-2,hy+25,4,3)}
+      // head: face + helmet dome + visor + glowing eye toward facing
+      ctx.fillStyle='#efe9ff';ctx.beginPath();ctx.arc(x,hy+6,8,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,hy+6,8,Math.PI,0);ctx.fill();ctx.fillRect(x-8,hy+5,16,2);
+      ctx.fillStyle='#15101f';ctx.fillRect(x-6,hy+5,12,5);
+      ctx.fillStyle=c;ctx.fillRect(x+(f>0?2:-5),hy+6,3,3)}
     // Attacking limb (punch / kick / uppercut arc)
     if(this.move){const mv=this.move,act=(mv.t>=mv.a0&&mv.t<=mv.a1)?1:.45,reach=mv.range*act;
       ctx.strokeStyle=(mv.type==='heavy'||mv.type==='finish')?'#ff5cf4':'#ffd84d';ctx.lineWidth=5;ctx.lineCap='round';
@@ -1047,8 +1072,9 @@ class VSfighter{
 Game.prototype.vsState=null;Game.prototype.vsFighters=[];Game.prototype.vsAttacks=[];Game.prototype.vsProj=[];Game.prototype.vsStage=0;Game.prototype.vsWinner=null;
 Game.prototype.showVSMode=function(){this.state='vs-select';this.hideAll();const el=document.getElementById('vs-mode-screen');el.classList.remove('hidden');let h='<div class="panel center" style="max-width:700px;"><h1 class="title" style="font-size:32px;">\u2694 VS MODE</h1><div style="font-size:14px;color:#8a7acc;margin-bottom:20px;">Select Character (8 Fighters)</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:600px;margin:0 auto;">';for(let i=0;i<VSCHARACTERS.length;i++){const c=VSCHARACTERS[i];h+='<div class="map-card" data-char="'+i+'" style="border-color:'+c.color+';cursor:pointer;padding:12px;"><div style="width:50px;height:50px;margin:0 auto 6px;background:'+c.color+';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;">'+c.icon+'</div><div style="font-weight:bold;font-size:13px;color:'+c.color+';">'+c.name+'</div><div style="font-size:9px;color:#aaa;margin-top:3px;">'+c.special+'</div><div style="font-size:8px;color:#666;margin-top:2px;">'+c.weight+' | spd:'+(c.speed||1)+'</div></div>'}h+='</div><div style="margin-top:16px;font-size:12px;color:#666;">Player 1: Click character | Player 2: CPU</div><button class="dc-btn" id="vs-start" style="margin-top:16px;font-size:16px;padding:12px 32px;" disabled>Select Stage</button></div>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{el.querySelectorAll('.map-card').forEach(x=>{x.style.borderColor=VSCHARACTERS[parseInt(x.dataset.char)].color;x.style.boxShadow='none'});this.vsChar1=parseInt(c.dataset.char);c.style.borderColor='#ffd84d';c.style.boxShadow='0 0 20px #ffd84d';document.getElementById('vs-start').disabled=false}});document.getElementById('vs-start').onclick=()=>this.showVSStage()};
 Game.prototype.showVSStage=function(){if(this.vsChar1===undefined)return;this.vsChar2=Math.floor(Math.random()*VSCHARACTERS.length);const el=document.getElementById('vs-mode-screen');let h='<div class="panel center" style="max-width:600px;"><h1 class="title" style="font-size:28px;">Select Stage</h1><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:450px;margin:20px auto;">';for(let i=0;i<VSSTAGES.length;i++){const s=VSSTAGES[i];h+='<div class="map-card" data-stage="'+i+'" style="border-color:'+s.color+';cursor:pointer;padding:12px;"><div style="width:100%;height:66px;border-radius:6px;margin-bottom:8px;overflow:hidden;background:linear-gradient(180deg,'+s.sky+','+s.ground+');"><img src="'+encodeURI(s.img)+'" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;" onerror="this.style.display=\'none\'"></div><div style="font-weight:bold;color:'+s.color+';">'+s.name+'</div></div>'}h+='</div><button class="dc-btn pink" id="vs-fight" style="font-size:18px;padding:14px 40px;margin-top:10px;">\u2694 FIGHT!</button>';el.innerHTML=h;el.querySelectorAll('.map-card').forEach(c=>{c.onclick=()=>{this.vsStage=parseInt(c.dataset.stage);el.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected')}});document.getElementById('vs-fight').onclick=()=>this.startVSBattle()};
-Game.prototype.startVSBattle=function(){this.state='vs-battle';this.hideAll();this.vsFighters=[new VSfighter(1,this.vsChar1,200,1),new VSfighter(2,this.vsChar2,W-200,-1)];this.vsAttacks=[];this.vsProj=[];this.vsWinner=null;this._vsEnding=false;this.hud.hide()};
+Game.prototype.startVSBattle=function(){this.state='vs-battle';this.hideAll();this.vsFighters=[new VSfighter(1,this.vsChar1,200,1),new VSfighter(2,this.vsChar2,W-200,-1)];this.vsAttacks=[];this.vsProj=[];this.vsWinner=null;this._vsEnding=false;this._vsHitstop=0;this.hud.hide()};
 Game.prototype.updateVS=function(dt){if(this.state!=='vs-battle')return;
+  if(this._vsHitstop>0){this._vsHitstop-=dt;if(this._vsHitstop>0)return}// freeze-frame on impact for punchy hits
   const p1=this.vsFighters[0],cpu=this.vsFighters[1];
   // P1 = human; read live keys (held for movement/jump, consumed for attack/special)
   const hin={left:this.isPressed('ArrowLeft')||this.isPressed('KeyA'),right:this.isPressed('ArrowRight')||this.isPressed('KeyD'),jump:this.isPressed('ArrowUp')||this.isPressed('KeyW'),down:this.isPressed('ArrowDown')||this.isPressed('KeyS'),attack:this.consumePress('KeyZ'),special:this.consumePress('KeyX')};
@@ -1075,7 +1101,7 @@ Game.prototype.renderVS=function(ctx){if(this.state!=='vs-battle')return;const s
   const hud=(f,align)=>{ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(align==='left'?20:W-180,18,160,54);ctx.textAlign=align;const tx=align==='left'?30:W-30;ctx.font='bold 18px "Courier New",monospace';ctx.fillStyle=f.char.color;ctx.fillText(f.char.name,tx,40);ctx.font='bold 22px "Courier New",monospace';ctx.fillStyle=f.percent>=100?'#ff6b6b':'#fff';ctx.fillText(Math.floor(f.percent)+'%',tx,64);if(f.combo>=2){ctx.font='bold 13px "Courier New",monospace';ctx.fillStyle='#ffd84d';ctx.fillText(f.combo+' HIT!',tx,86)}};
   hud(p1,'left');hud(p2,'right');
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='11px "Courier New",monospace';ctx.textAlign='center';
-  ctx.fillText('←→ move   ↑ jump   Z attack ( ↓Z heavy · ↑Z upper )   X special   hold back = block',W/2,H-12);ctx.textAlign='left'};
+  ctx.fillText('←→ move (dbl-tap dash)   ↑ jump   Z attack ( ↓Z heavy · ↑Z upper · air↓Z spike )   X special   hold back = block',W/2,H-12);ctx.textAlign='left'};
 Game.prototype.showVSResult=function(){this.state='vs-result';const el=document.getElementById('vs-mode-screen');const w=this.vsWinner;el.classList.remove('hidden');el.innerHTML='<div class="panel center"><h1 class="title" style="font-size:36px;color:'+(w?w.char.color:'#ffd84d')+'">'+(w?'\u2605 '+w.char.name+' WINS!':'DRAW!')+'</h1><div style="font-size:18px;margin:20px 0;">P1: '+VSCHARACTERS[this.vsChar1].name+' - '+Math.floor(this.vsFighters[0].percent)+'%</div><div style="font-size:18px;">P2: '+VSCHARACTERS[this.vsChar2].name+' - '+Math.floor(this.vsFighters[1].percent)+'%</div><button class="dc-btn" id="vs-replay" style="margin-top:20px;">Rematch</button><button class="dc-btn secondary" id="vs-exit" style="margin-left:10px;">Exit</button></div>';document.getElementById('vs-replay').onclick=()=>this.startVSBattle();document.getElementById('vs-exit').onclick=()=>this.showMenu()};
 
 // ════════════════════════════════════════════════════════════════
